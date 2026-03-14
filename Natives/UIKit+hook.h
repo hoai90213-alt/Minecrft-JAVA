@@ -19,8 +19,8 @@ extern NSNotificationName UIPresentationControllerPresentationTransitionWillBegi
 - (UIView *)buttonGlassView;
 @end
 
-// private functions
-extern BOOL _UISolariumEnabled(void) __attribute__((weak_import));
+// Runtime-safe check for iOS 26+ liquid glass availability.
+BOOL PLIsUISolariumEnabled(void);
 
 @interface UIBarButtonItem(private)
 - (UIView *)view;
