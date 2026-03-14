@@ -123,7 +123,9 @@ jobs:
           # Executa o build
           # Passamos BOOTJDK explicitamente para garantir que o Makefile pegue o caminho certo
           if [ "${{ matrix.platform_name }}" == "ios" ]; then
+            # Build both regular IPA and TrollStore TIPA on iOS
             $MAKE_CMD BOOTJDK="$BOOTJDK" JAVAC="$JAVAC_CMD" JAVA_HOME="$JAVA_HOME" -j1 dsym package PLATFORM=${{ matrix.platform }}
+            $MAKE_CMD BOOTJDK="$BOOTJDK" JAVAC="$JAVAC_CMD" JAVA_HOME="$JAVA_HOME" -j1 dsym package PLATFORM=${{ matrix.platform }} TROLLSTORE_JIT_ENT=1
           elif [ "${{ matrix.platform_name }}" == "tvos" ]; then
             $MAKE_CMD BOOTJDK="$BOOTJDK" JAVAC="$JAVAC_CMD" JAVA_HOME="$JAVA_HOME" -j1 dsym package PLATFORM=${{ matrix.platform }} TROLLSTORE_JIT_ENT=1
           else
@@ -144,6 +146,7 @@ jobs:
         with:
           name: org.angelauramc.amethyst-${{ matrix.platform_name }}-trollstore.tipa
           path: artifacts/org.angelauramc.amethyst-*-${{ matrix.platform_name }}-trollstore.tipa
+          if-no-files-found: error
 
       - name: Upload slimmed ipa
         uses: actions/upload-artifact@v4
