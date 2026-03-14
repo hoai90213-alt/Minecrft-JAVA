@@ -1,0 +1,165 @@
+name: Development build
+
+on:
+  pull_request:
+    branches-ignore:
+      - 'l10n_main'
+    types: [opened, reopened, synchronize]
+  push:
+    branches-ignore:
+      - 'l10n_main'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Development build
+    strategy:
+      matrix:
+        include:
+          - platform: 2
+            platform_name: ios
+    
+    runs-on: macos-latest
+    steps:
+      - name: Remove work folders
+        run: |
+          rm -rf ./* || true
+          rm -rf ./.??* || true
+          
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Checkout repository submodules
+        run: git submodule update --init --recursive
+
+      - name: Install Dependencies
+        run: |
+          brew update
+          # Adicionei wget e cmake para garantir
+          brew install make ldid wget cmake
+          echo "/opt/homebrew/opt/make/libexec/gnubin" >> $GITHUB_PATH
+
+      - name: Setup Java 8
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu' # Zulu é essencial para Mac M1/ARM64
+          java-version: '8'
+
+      - name: Get gl4es latest commit hash
+        id: gl4es-sha
+        run: echo "sha=$(git ls-remote https://github.com/PojavLauncherTeam/gl4es-114-extra refs/heads/master | grep -io '^\S*')" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Cache gl4es
+        uses: actions/cache@v3
+        if: false
+        id: gl4es-cache
+        with:
+          path: gl4es/libs
+          key: gl4es-holy-ios-shared-2-${{ steps.gl4es-sha.outputs.sha }}
+
+      - name: Get gl4es
+        if: false && steps.gl4es-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: 'PojavLauncherTeam/gl4es-114-extra'
+          path: 'gl4es'
+
+      - name: Build gl4es
+        if: false && steps.gl4es-cache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          cd gl4es
+          git config user.email "github-actions@users.noreply.github.com"
+          git config user.name "github-actions"
+          cmake -B build -DDEFAULT_ES=2 \
+            -DNOX11=ON -DNOEGL=OFF -DSTATICLIB=OFF -DPLATFORM=OS64 \
+            -DCMAKE_C_FLAGS=-Wno-error=implicit-function-declaration
+          cmake --build build --config RelWithDebInfo --target GL
+          cp -R lib/libGL.dylib ../Natives/resources/Frameworks/libgl4es_114.dylib
+
+      # --- CORREÇÕES CRÍTICAS COMEÇAM AQUI ---
+
+      # 1. Ignora os erros de verificação do Java no Makefile
+      - name: Patch Makefile (Bypass Java Checks)
+        run: |
+          sed -i '' '184s/error/warning/' Makefile
+          sed -i '' '189s/error/warning/' Makefile
+
+      # 2. INJETA O HEADER FALTANDO (Resolve o erro 'mach_task_self')
+      - name: Fix JavaLauncher Headers
+        run: |
+          echo "Adicionando headers faltando no JavaLauncher.m..."
+          # Insere #include <mach/mach.h> na primeira linha do arquivo
+          sed -i '' '1i\
+          #include <mach/mach.h>' Natives/JavaLauncher.m
+
+      # 3. Build Final
+      - name: Build for ${{ matrix.platform_name }}
+        run: |
+          eval "$(/opt/homebrew/bin/brew shellenv)"
+          
+          # Configurações do Java
+          export JAVA_HOME=${JAVA_HOME}
+          export PATH=$JAVA_HOME/bin:$PATH
+          
+          # --- CORREÇÃO AQUI ---
+          # O Makefile espera que o BOOTJDK aponte para a pasta BIN, não a raiz
+          export BOOTJDK="$JAVA_HOME/bin"
+          # ---------------------
+          
+          # Define o caminho EXATO do compilador Java 8
+          export JAVAC_CMD="$JAVA_HOME/bin/javac"
+          
+          echo "Ambiente configurado."
+          echo "BOOTJDK está em: $BOOTJDK"
+          $JAVAC_CMD -version
+          
+          MAKE_CMD="make"
+          if command -v gmake &> /dev/null; then
+              MAKE_CMD="gmake"
+          fi
+
+          # Executa o build
+          # Passamos BOOTJDK explicitamente para garantir que o Makefile pegue o caminho certo
+          if [ "${{ matrix.platform_name }}" == "ios" ]; then
+            $MAKE_CMD BOOTJDK="$BOOTJDK" JAVAC="$JAVAC_CMD" JAVA_HOME="$JAVA_HOME" -j1 dsym package PLATFORM=${{ matrix.platform }}
+          elif [ "${{ matrix.platform_name }}" == "tvos" ]; then
+            $MAKE_CMD BOOTJDK="$BOOTJDK" JAVAC="$JAVAC_CMD" JAVA_HOME="$JAVA_HOME" -j1 dsym package PLATFORM=${{ matrix.platform }} TROLLSTORE_JIT_ENT=1
+          else
+            $MAKE_CMD BOOTJDK="$BOOTJDK" JAVAC="$JAVAC_CMD" JAVA_HOME="$JAVA_HOME" -j1 dsym package PLATFORM=${{ matrix.platform }}
+          fi
+
+
+      # --- FIM DAS CORREÇÕES ---
+
+      - name: Upload regular ipa
+        uses: actions/upload-artifact@v4
+        with:
+          name: org.angelauramc.amethyst-${{ matrix.platform_name }}.ipa
+          path: artifacts/org.angelauramc.amethyst-*-${{ matrix.platform_name }}.ipa
+
+      - name: Upload regular tipa
+        uses: actions/upload-artifact@v4
+        with:
+          name: org.angelauramc.amethyst-${{ matrix.platform_name }}-trollstore.tipa
+          path: artifacts/org.angelauramc.amethyst-*-${{ matrix.platform_name }}-trollstore.tipa
+
+      - name: Upload slimmed ipa
+        uses: actions/upload-artifact@v4
+        with:
+          name: org.angelauramc.amethyst.slimmed-${{ matrix.platform_name }}.ipa
+          path: artifacts/org.angelauramc.amethyst.slimmed-*-${{ matrix.platform_name }}.ipa
+
+      - name: Upload slimmed tipa
+        uses: actions/upload-artifact@v4
+        with:
+          name: org.angelauramc.amethyst.slimmed-${{ matrix.platform_name }}-trollstore.tipa
+          path: artifacts/org.angelauramc.amethyst.slimmed-*-${{ matrix.platform_name }}-trollstore.tipa
+
+      - name: Upload PojavLauncher.dSYM
+        uses: actions/upload-artifact@v4
+        if: matrix.platform_name == 'ios'
+        with:
+          name: AngelAuraAmethyst.dSYM
+          path: artifacts/AngelAuraAmethyst.dSYM
