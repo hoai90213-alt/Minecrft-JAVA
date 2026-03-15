@@ -45,12 +45,16 @@ static void *ProgressObserverContext = &ProgressObserverContext;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    self.view.backgroundColor = UIColor.clearColor;
+    AmethystApplyPanelBackground(self.view);
 
     if ([self respondsToSelector:@selector(setNeedsUpdateOfScreenEdgesDeferringSystemGestures)]) {
         [self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
     }
     UIToolbar *targetToolbar = self.toolbar;
     BOOL hasLiquidGlass = PLIsUISolariumEnabled();
+    UIColor *accent = AmethystColorAccent();
+    UIColor *border = [AmethystColorAccentMuted() colorWithAlphaComponent:0.55];
     
     if(hasLiquidGlass) {
         self.versionTextField = [[PickTextField alloc] initWithFrame:CGRectMake(0, 0, MIN(self.view.frame.size.width,self.view.frame.size.height)*0.8 - 40, 36)];
@@ -68,6 +72,13 @@ static void *ProgressObserverContext = &ProgressObserverContext;
     self.versionTextField.leftViewMode = UITextFieldViewModeAlways;
     self.versionTextField.rightViewMode = UITextFieldViewModeAlways;
     self.versionTextField.textAlignment = NSTextAlignmentCenter;
+    self.versionTextField.backgroundColor = [AmethystColorPanel() colorWithAlphaComponent:0.90];
+    self.versionTextField.textColor = UIColor.labelColor;
+    self.versionTextField.tintColor = accent;
+    self.versionTextField.layer.cornerRadius = 10;
+    self.versionTextField.layer.borderWidth = 1;
+    self.versionTextField.layer.borderColor = border.CGColor;
+    self.versionTextField.clipsToBounds = YES;
 
     self.versionPickerView = [[PLPickerView alloc] init];
     self.versionPickerView.delegate = self;
@@ -86,8 +97,9 @@ static void *ProgressObserverContext = &ProgressObserverContext;
                                                                  target:self
                                                                  action:@selector(performInstallOrShowDetails:)];
         self.buttonInstallItem.enabled = NO;
+        self.buttonInstallItem.tintColor = UIColor.whiteColor;
         dispatch_async(dispatch_get_main_queue(), ^{
-            self.buttonInstallItem.buttonGlassView.backgroundColor = [UIColor colorWithRed:121/255.0 green:56/255.0 blue:162/255.0 alpha:0.5];
+            self.buttonInstallItem.buttonGlassView.backgroundColor = [accent colorWithAlphaComponent:0.68];
         });
         [textFieldContainer addSubview:self.versionTextField];
         UIBarButtonItem *textFieldItem = [[UIBarButtonItem alloc] initWithCustomView:textFieldContainer];
@@ -100,8 +112,12 @@ static void *ProgressObserverContext = &ProgressObserverContext;
         setButtonPointerInteraction(self.buttonInstall);
         [self.buttonInstall setTitle:localize(@"Play", nil) forState:UIControlStateNormal];
         self.buttonInstall.autoresizingMask = AUTORESIZE_MASKS;
-        self.buttonInstall.backgroundColor = [UIColor colorWithRed:121/255.0 green:56/255.0 blue:162/255.0 alpha:1.0];
-        self.buttonInstall.layer.cornerRadius = 5;
+        self.buttonInstall.backgroundColor = accent;
+        self.buttonInstall.layer.cornerRadius = 10;
+        self.buttonInstall.layer.shadowColor = [accent colorWithAlphaComponent:0.55].CGColor;
+        self.buttonInstall.layer.shadowOpacity = 1.0;
+        self.buttonInstall.layer.shadowOffset = CGSizeMake(0, 4);
+        self.buttonInstall.layer.shadowRadius = 10;
         self.buttonInstall.frame = CGRectMake(self.toolbar.frame.size.width * 0.8, 4, self.toolbar.frame.size.width * 0.2, self.toolbar.frame.size.height - 8);
         self.buttonInstall.tintColor = UIColor.whiteColor;
         self.buttonInstall.enabled = NO;
@@ -118,6 +134,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
     self.progressText.autoresizingMask = AUTORESIZE_MASKS;
     self.progressText.font = [self.progressText.font fontWithSize:16];
     self.progressText.textAlignment = NSTextAlignmentCenter;
+    self.progressText.textColor = UIColor.secondaryLabelColor;
     self.progressText.userInteractionEnabled = NO;
     
     if(hasLiquidGlass) {
@@ -555,6 +572,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
 
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
+    AmethystApplyPanelBackground(self.view);
     [sidebarViewController updateAccountInfo];
     if (self.globalToolbarItems) {
         if (!self.viewControllers.firstObject.toolbarItems) {

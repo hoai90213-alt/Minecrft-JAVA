@@ -10,6 +10,10 @@ extern dispatch_group_t fatalExitGroup;
 
 #pragma mark - UISceneSession lifecycle
 
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    AmethystApplyGlobalAppearance();
+    return YES;
+}
 
 - (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options {
     // Called when a new scene session is being created.

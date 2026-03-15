@@ -1,4 +1,5 @@
 #import <SafariServices/SafariServices.h>
+#import <QuartzCore/QuartzCore.h>
 
 #include "jni.h"
 #include <dlfcn.h>
@@ -117,6 +118,162 @@ NSString* localize(NSString* key, NSString* comment) {
     }
 
     return value;
+}
+
+static UIColor* AmethystDynamicColor(CGFloat rLight, CGFloat gLight, CGFloat bLight, CGFloat rDark, CGFloat gDark, CGFloat bDark) {
+    UIColor *light = [UIColor colorWithRed:rLight green:gLight blue:bLight alpha:1.0];
+    UIColor *dark = [UIColor colorWithRed:rDark green:gDark blue:bDark alpha:1.0];
+    if (@available(iOS 13.0, *)) {
+        return [UIColor colorWithDynamicProvider:^UIColor * _Nonnull(UITraitCollection * _Nonnull trait) {
+            return trait.userInterfaceStyle == UIUserInterfaceStyleDark ? dark : light;
+        }];
+    }
+    return light;
+}
+
+static UIColor* AmethystResolveColor(UIColor *color, UITraitCollection *trait) {
+    if (@available(iOS 13.0, *)) {
+        return [color resolvedColorWithTraitCollection:trait];
+    }
+    return color;
+}
+
+UIColor* AmethystColorAccent(void) {
+    static UIColor *color;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        color = AmethystDynamicColor(0.11, 0.58, 0.45, 0.24, 0.77, 0.61);
+    });
+    return color;
+}
+
+UIColor* AmethystColorAccentMuted(void) {
+    static UIColor *color;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        color = AmethystDynamicColor(0.79, 0.90, 0.85, 0.21, 0.30, 0.27);
+    });
+    return color;
+}
+
+UIColor* AmethystColorPanel(void) {
+    static UIColor *color;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        color = AmethystDynamicColor(0.97, 0.98, 0.98, 0.11, 0.13, 0.15);
+    });
+    return color;
+}
+
+void AmethystApplyGlobalAppearance(void) {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        UIColor *accent = AmethystColorAccent();
+        UIColor *panel = AmethystColorPanel();
+
+        [UIView appearance].tintColor = accent;
+
+        UINavigationBarAppearance *navAppearance = [[UINavigationBarAppearance alloc] init];
+        [navAppearance configureWithOpaqueBackground];
+        navAppearance.backgroundColor = [panel colorWithAlphaComponent:0.96];
+        navAppearance.shadowColor = UIColor.clearColor;
+        navAppearance.titleTextAttributes = @{
+            NSForegroundColorAttributeName: UIColor.labelColor,
+            NSFontAttributeName: [UIFont systemFontOfSize:17 weight:UIFontWeightSemibold]
+        };
+        navAppearance.largeTitleTextAttributes = @{
+            NSForegroundColorAttributeName: UIColor.labelColor,
+            NSFontAttributeName: [UIFont systemFontOfSize:33 weight:UIFontWeightBold]
+        };
+
+        UINavigationBar *navBar = [UINavigationBar appearance];
+        navBar.tintColor = accent;
+        navBar.prefersLargeTitles = YES;
+        navBar.standardAppearance = navAppearance;
+        navBar.compactAppearance = navAppearance;
+        navBar.scrollEdgeAppearance = navAppearance;
+
+        UIToolbarAppearance *toolbarAppearance = [[UIToolbarAppearance alloc] init];
+        [toolbarAppearance configureWithTransparentBackground];
+        toolbarAppearance.backgroundColor = [panel colorWithAlphaComponent:0.90];
+        toolbarAppearance.shadowColor = UIColor.clearColor;
+        UIToolbar *toolbar = [UIToolbar appearance];
+        toolbar.tintColor = accent;
+        if (@available(iOS 15.0, *)) {
+            toolbar.standardAppearance = toolbarAppearance;
+        } else {
+            toolbar.barTintColor = toolbarAppearance.backgroundColor;
+        }
+
+        UISegmentedControl *segmented = [UISegmentedControl appearance];
+        segmented.selectedSegmentTintColor = accent;
+        [segmented setTitleTextAttributes:@{NSForegroundColorAttributeName: UIColor.secondaryLabelColor}
+                                 forState:UIControlStateNormal];
+        [segmented setTitleTextAttributes:@{NSForegroundColorAttributeName: UIColor.whiteColor}
+                                 forState:UIControlStateSelected];
+    });
+}
+
+void AmethystApplyCardStyle(UIView *view) {
+    if (!view) {
+        return;
+    }
+
+    UIColor *panel = AmethystResolveColor(AmethystColorPanel(), view.traitCollection);
+    UIColor *border = [AmethystResolveColor(AmethystColorAccentMuted(), view.traitCollection) colorWithAlphaComponent:0.45];
+    view.backgroundColor = [panel colorWithAlphaComponent:0.92];
+    view.layer.cornerRadius = 14.0;
+    view.layer.borderWidth = 1.0;
+    view.layer.borderColor = border.CGColor;
+    view.layer.masksToBounds = YES;
+}
+
+void AmethystApplyPanelBackground(UIView *view) {
+    if (!view) {
+        return;
+    }
+
+    static NSInteger const kBackgroundTag = 91429;
+    UITableView *tableView = [view isKindOfClass:UITableView.class] ? (UITableView *)view : nil;
+    UIView *background = tableView ? tableView.backgroundView : [view viewWithTag:kBackgroundTag];
+    CAGradientLayer *baseLayer = nil;
+    CAGradientLayer *glowLayer = nil;
+    if (!background) {
+        background = [[UIView alloc] initWithFrame:view.bounds];
+        background.tag = kBackgroundTag;
+        background.userInteractionEnabled = NO;
+        background.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        if (tableView) {
+            tableView.backgroundView = background;
+        } else {
+            [view insertSubview:background atIndex:0];
+        }
+
+        baseLayer = [CAGradientLayer layer];
+        [background.layer addSublayer:baseLayer];
+
+        glowLayer = [CAGradientLayer layer];
+        [background.layer addSublayer:glowLayer];
+    } else if (background.layer.sublayers.count >= 2) {
+        baseLayer = (CAGradientLayer *)background.layer.sublayers[0];
+        glowLayer = (CAGradientLayer *)background.layer.sublayers[1];
+    }
+
+    background.frame = view.bounds;
+
+    UIColor *topColor = AmethystResolveColor(AmethystDynamicColor(0.92, 0.96, 0.98, 0.07, 0.09, 0.12), view.traitCollection);
+    UIColor *bottomColor = AmethystResolveColor(AmethystDynamicColor(0.84, 0.91, 0.95, 0.03, 0.04, 0.06), view.traitCollection);
+    UIColor *glowColor = [AmethystResolveColor(AmethystColorAccent(), view.traitCollection) colorWithAlphaComponent:0.24];
+
+    baseLayer.frame = background.bounds;
+    baseLayer.startPoint = CGPointMake(0, 0);
+    baseLayer.endPoint = CGPointMake(1, 1);
+    baseLayer.colors = @[(id)topColor.CGColor, (id)bottomColor.CGColor];
+
+    glowLayer.frame = background.bounds;
+    glowLayer.startPoint = CGPointMake(0.2, 0.0);
+    glowLayer.endPoint = CGPointMake(0.8, 1.0);
+    glowLayer.colors = @[(id)glowColor.CGColor, (id)UIColor.clearColor.CGColor];
 }
 
 void customNSLog(const char *file, int lineNumber, const char *functionName, NSString *format, ...)
