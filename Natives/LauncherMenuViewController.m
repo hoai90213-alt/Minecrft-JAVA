@@ -114,19 +114,23 @@ static NSInteger const kMenuIconTag = 0xC0DE10;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.backgroundColor = UIColor.clearColor;
     self.tableView.backgroundView = nil;
-    self.tableView.rowHeight = 50.0;
-    self.tableView.estimatedRowHeight = 50.0;
+    self.tableView.rowHeight = 44.0;
+    self.tableView.estimatedRowHeight = 44.0;
     self.tableView.alwaysBounceVertical = NO;
     self.tableView.bounces = NO;
-    self.tableView.tableHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 1, 1)];
-    self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 1, 1)];
+    self.tableView.tableHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 1, 0.01)];
+    self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 1, 0.01)];
     self.tableView.contentInset = UIEdgeInsetsZero;
     self.tableView.scrollIndicatorInsets = UIEdgeInsetsZero;
+    self.tableView.sectionHeaderHeight = 0.0;
+    self.tableView.sectionFooterHeight = 0.0;
+    self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     if (@available(iOS 15.0, *)) {
         self.tableView.sectionHeaderTopPadding = 0;
+        self.tableView.fillerRowHeight = 0.0;
     }
     
-    self.navigationController.toolbarHidden = NO;
+    self.navigationController.toolbarHidden = YES;
     UIActivityIndicatorViewStyle indicatorStyle = UIActivityIndicatorViewStyleMedium;
     UIActivityIndicatorView *toolbarIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:indicatorStyle];
     [toolbarIndicator startAnimating];
@@ -172,6 +176,8 @@ static NSInteger const kMenuIconTag = 0xC0DE10;
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    self.navigationController.navigationBarHidden = YES;
+    self.navigationController.toolbarHidden = YES;
     self.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayModeNever;
     AmethystApplyVisionSurface(self.accountButton, 14.0);
     [self restoreHighlightedSelection];
@@ -179,18 +185,8 @@ static NSInteger const kMenuIconTag = 0xC0DE10;
 
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
-    [self.tableView layoutIfNeeded];
-
-    CGFloat toolbarHeight = self.navigationController.toolbarHidden ? 0.0 : self.navigationController.toolbar.frame.size.height;
-    CGFloat topInset = self.view.safeAreaInsets.top + 4.0;
-    CGFloat bottomInset = self.view.safeAreaInsets.bottom + toolbarHeight + 8.0;
-    CGFloat maxHeight = MAX(0.0, self.view.bounds.size.height - topInset - bottomInset);
-    CGFloat desiredHeight = MIN(maxHeight, self.tableView.contentSize.height + 2.0);
-
-    CGRect frame = self.tableView.frame;
-    frame.origin.y = topInset;
-    frame.size.height = desiredHeight;
-    self.tableView.frame = frame;
+    self.tableView.contentInset = UIEdgeInsetsZero;
+    self.tableView.scrollIndicatorInsets = UIEdgeInsetsZero;
 }
 
 - (UIBarButtonItem *)drawAccountButton {
@@ -223,6 +219,26 @@ static NSInteger const kMenuIconTag = 0xC0DE10;
     return self.options.count;
 }
 
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
+{
+    return CGFLOAT_MIN;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
+{
+    return CGFLOAT_MIN;
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
+{
+    return [UIView new];
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section
+{
+    return [UIView new];
+}
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     LauncherMenuCustomItem *item = self.options[indexPath.row];
@@ -231,18 +247,24 @@ static NSInteger const kMenuIconTag = 0xC0DE10;
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];
     }
 
+    if (@available(iOS 14.0, *)) {
+        cell.contentConfiguration = nil;
+    }
     cell.textLabel.text = nil;
+    cell.textLabel.hidden = YES;
+    cell.detailTextLabel.text = nil;
+    cell.detailTextLabel.hidden = YES;
     cell.imageView.image = nil;
     cell.accessibilityLabel = item.title;
 
     UIImage *icon = [UIImage systemImageNamed:item.imageName];
     if (icon) {
-        UIImageSymbolConfiguration *symbolConfig = [UIImageSymbolConfiguration configurationWithPointSize:23 weight:UIImageSymbolWeightMedium];
+        UIImageSymbolConfiguration *symbolConfig = [UIImageSymbolConfiguration configurationWithPointSize:20 weight:UIImageSymbolWeightMedium];
         icon = [[icon imageByApplyingSymbolConfiguration:symbolConfig] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     } else {
         icon = [UIImage imageNamed:item.imageName];
         if (icon) {
-            icon = [icon _imageWithSize:CGSizeMake(26, 26)];
+            icon = [icon _imageWithSize:CGSizeMake(22, 22)];
         }
     }
 
@@ -257,8 +279,8 @@ static NSInteger const kMenuIconTag = 0xC0DE10;
         [NSLayoutConstraint activateConstraints:@[
             [iconView.centerXAnchor constraintEqualToAnchor:cell.contentView.centerXAnchor],
             [iconView.centerYAnchor constraintEqualToAnchor:cell.contentView.centerYAnchor],
-            [iconView.widthAnchor constraintEqualToConstant:26.0],
-            [iconView.heightAnchor constraintEqualToConstant:26.0],
+            [iconView.widthAnchor constraintEqualToConstant:22.0],
+            [iconView.heightAnchor constraintEqualToConstant:22.0],
         ]];
     }
     iconView.image = icon;
