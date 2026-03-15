@@ -175,9 +175,12 @@
         self.accountButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
 
         self.accountButton.titleEdgeInsets = UIEdgeInsetsMake(0, 4, 0, -4);
-        self.accountButton.contentEdgeInsets = UIEdgeInsetsMake(6, 10, 6, 10);
+        self.accountButton.contentEdgeInsets = UIEdgeInsetsMake(8, 12, 8, 12);
         self.accountButton.imageView.contentMode = UIViewContentModeScaleAspectFit;
         self.accountButton.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+        self.accountButton.titleLabel.numberOfLines = 2;
+        self.accountButton.tintColor = [UIColor colorWithWhite:1.0 alpha:0.94];
+        [self.accountButton setTitleColor:[UIColor colorWithWhite:1.0 alpha:0.96] forState:UIControlStateNormal];
         self.accountBtnItem = [[UIBarButtonItem alloc] initWithCustomView:self.accountButton];
     }
 
@@ -225,7 +228,7 @@
             performSelector:@selector(imageName)]];
         cell.imageView.image = [cell.imageView.image _imageWithSize:CGSizeMake(40, 40)];
     }
-    AmethystApplyVisionCell(cell);
+    AmethystApplyVisionSidebarCell(cell);
     return cell;
 }
 
@@ -295,7 +298,11 @@
 
     // Remove the prefix "Demo." if there is
     BOOL isDemo = [selected[@"username"] hasPrefix:@"Demo."];
-    NSMutableAttributedString *title = [[NSMutableAttributedString alloc] initWithString:[selected[@"username"] substringFromIndex:(isDemo?5:0)]];
+    NSDictionary *titleAttrs = @{
+        NSForegroundColorAttributeName: [UIColor colorWithWhite:1.0 alpha:0.96],
+        NSFontAttributeName: [UIFont systemFontOfSize:15 weight:UIFontWeightSemibold]
+    };
+    NSMutableAttributedString *title = [[NSMutableAttributedString alloc] initWithString:[selected[@"username"] substringFromIndex:(isDemo?5:0)] attributes:titleAttrs];
 
     // Check if we're switching between demo and full mode
     BOOL shouldUpdateProfiles = (getenv("DEMO_LOCK")!=NULL) != isDemo;
@@ -316,7 +323,10 @@
         subtitle = selected[@"xboxGamertag"];
     }
 
-    subtitle = [[NSAttributedString alloc] initWithString:subtitle attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:12]}];
+    subtitle = [[NSAttributedString alloc] initWithString:subtitle attributes:@{
+        NSForegroundColorAttributeName: [UIColor colorWithWhite:1.0 alpha:0.72],
+        NSFontAttributeName: [UIFont systemFontOfSize:12 weight:UIFontWeightMedium]
+    }];
     [title appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n" attributes:nil]];
     [title appendAttributedString:subtitle];
     

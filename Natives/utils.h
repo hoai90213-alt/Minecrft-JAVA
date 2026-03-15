@@ -88,6 +88,7 @@ void AmethystApplyVisionSidebar(UITableView *tableView);
 void AmethystApplyVisionContentTable(UITableView *tableView);
 void AmethystApplyVisionSurface(UIView *view, CGFloat cornerRadius);
 void AmethystApplyVisionCell(UITableViewCell *cell);
+void AmethystApplyVisionSidebarCell(UITableViewCell *cell);
 void AmethystApplyVisionInput(UITextField *textField);
 void AmethystApplyVisionPrimaryButton(UIButton *button);
 NSError* AmethystSaveDashboardWallpaperFromImage(UIImage *image);
