@@ -1,10 +1,4 @@
 #import <Foundation/Foundation.h>
-#if __has_include(<UniformTypeIdentifiers/UniformTypeIdentifiers.h>)
-#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
-#endif
-#if __has_include(<PhotosUI/PhotosUI.h>)
-#import <PhotosUI/PhotosUI.h>
-#endif
 
 #import "DBNumberedSlider.h"
 #import "HostManagerBridge.h"
@@ -20,11 +14,7 @@
 #import "ios_uikit_bridge.h"
 #import "utils.h"
 
-@interface LauncherPreferencesViewController()<UIDocumentPickerDelegate
-#if __has_include(<PhotosUI/PhotosUI.h>)
-, PHPickerViewControllerDelegate
-#endif
->
+@interface LauncherPreferencesViewController()<UIDocumentPickerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
 @property(nonatomic) NSArray<NSString*> *rendererKeys, *rendererList;
 @end
 
@@ -521,33 +511,21 @@
 }
 
 - (void)actionChooseDashboardBackgroundFromPhotos {
-#if __has_include(<PhotosUI/PhotosUI.h>)
-    if (@available(iOS 14.0, *)) {
-        PHPickerConfiguration *configuration = [[PHPickerConfiguration alloc] init];
-        configuration.selectionLimit = 1;
-        configuration.filter = [PHPickerFilter imagesFilter];
-
-        PHPickerViewController *picker = [[PHPickerViewController alloc] initWithConfiguration:configuration];
-        picker.delegate = self;
-        picker.modalPresentationStyle = UIModalPresentationFormSheet;
-        [self presentViewController:picker animated:YES completion:nil];
+    if (![UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
+        showDialog(localize(@"Error", nil), @"Photo library is unavailable on this device.");
         return;
     }
-#endif
-    showDialog(localize(@"Error", nil), @"This iOS version does not support photo picker.");
+
+    UIImagePickerController *picker = [UIImagePickerController new];
+    picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    picker.mediaTypes = @[@"public.image"];
+    picker.delegate = self;
+    picker.modalPresentationStyle = UIModalPresentationFormSheet;
+    [self presentViewController:picker animated:YES completion:nil];
 }
 
 - (void)actionChooseDashboardBackgroundFromFiles {
-    UIDocumentPickerViewController *documentPicker = nil;
-#if __has_include(<UniformTypeIdentifiers/UniformTypeIdentifiers.h>)
-    if (@available(iOS 14.0, *)) {
-        documentPicker = [[UIDocumentPickerViewController alloc] initForOpeningContentTypes:@[UTTypeImage] asCopy:YES];
-    } else {
-        documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[@"public.image"] inMode:UIDocumentPickerModeImport];
-    }
-#else
-    documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[@"public.image"] inMode:UIDocumentPickerModeImport];
-#endif
+    UIDocumentPickerViewController *documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[@"public.image"] inMode:UIDocumentPickerModeImport];
     documentPicker.delegate = self;
     documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
     [self presentViewController:documentPicker animated:YES completion:nil];
@@ -582,38 +560,21 @@
     [self handleDashboardBackgroundFileURL:urls.firstObject];
 }
 
-#if __has_include(<PhotosUI/PhotosUI.h>)
-- (void)picker:(PHPickerViewController *)picker didFinishPicking:(NSArray<PHPickerResult *> *)results {
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
     [picker dismissViewControllerAnimated:YES completion:nil];
-    if (results.count == 0) {
-        return;
-    }
+}
 
-    NSItemProvider *provider = results.firstObject.itemProvider;
-    if (![provider canLoadObjectOfClass:UIImage.class]) {
-        showDialog(localize(@"Error", nil), @"Unable to decode selected photo.");
-        return;
-    }
-
-    __weak __typeof(self) weakSelf = self;
-    [provider loadObjectOfClass:UIImage.class completionHandler:^(id<NSItemProviderReading> _Nullable object, NSError * _Nullable error) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (error) {
-                showDialog(localize(@"Error", nil), error.localizedDescription);
-                return;
-            }
-
-            UIImage *image = (UIImage *)object;
-            NSError *saveError = AmethystSaveDashboardWallpaperFromImage(image);
-            if (saveError) {
-                showDialog(localize(@"Error", nil), saveError.localizedDescription);
-                return;
-            }
-            [weakSelf refreshDashboardThemePreview];
-        });
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<UIImagePickerControllerInfoKey,id> *)info {
+    UIImage *image = info[UIImagePickerControllerOriginalImage];
+    [picker dismissViewControllerAnimated:YES completion:^{
+        NSError *saveError = AmethystSaveDashboardWallpaperFromImage(image);
+        if (saveError) {
+            showDialog(localize(@"Error", nil), saveError.localizedDescription);
+            return;
+        }
+        [self refreshDashboardThemePreview];
     }];
 }
-#endif
 
 #pragma mark UITableView
 
