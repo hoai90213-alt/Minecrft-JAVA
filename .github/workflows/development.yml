@@ -120,16 +120,35 @@ jobs:
               MAKE_CMD="gmake"
           fi
 
-          # Executa o build
-          # Passamos BOOTJDK explicitamente para garantir que o Makefile pegue o caminho certo
+          : > build.log
+          run_make() {
+            local label="$1"
+            shift
+            echo ">>> $label" | tee -a build.log
+            set +e
+            "$MAKE_CMD" "$@" 2>&1 | tee -a build.log
+            local rc=${PIPESTATUS[0]}
+            set -e
+            return $rc
+          }
+
+          BUILD_FAILED=0
           if [ "${{ matrix.platform_name }}" == "ios" ]; then
-            # Build both regular IPA and TrollStore TIPA on iOS
-            $MAKE_CMD BOOTJDK="$BOOTJDK" JAVAC="$JAVAC_CMD" JAVA_HOME="$JAVA_HOME" -j1 dsym package PLATFORM=${{ matrix.platform }}
-            $MAKE_CMD BOOTJDK="$BOOTJDK" JAVAC="$JAVAC_CMD" JAVA_HOME="$JAVA_HOME" -j1 dsym package PLATFORM=${{ matrix.platform }} TROLLSTORE_JIT_ENT=1
+            run_make "iOS regular IPA" BOOTJDK="$BOOTJDK" JAVAC="$JAVAC_CMD" JAVA_HOME="$JAVA_HOME" -j1 dsym package PLATFORM=${{ matrix.platform }} || BUILD_FAILED=1
+            run_make "iOS TrollStore TIPA" BOOTJDK="$BOOTJDK" JAVAC="$JAVAC_CMD" JAVA_HOME="$JAVA_HOME" -j1 dsym package PLATFORM=${{ matrix.platform }} TROLLSTORE_JIT_ENT=1 || BUILD_FAILED=1
           elif [ "${{ matrix.platform_name }}" == "tvos" ]; then
-            $MAKE_CMD BOOTJDK="$BOOTJDK" JAVAC="$JAVAC_CMD" JAVA_HOME="$JAVA_HOME" -j1 dsym package PLATFORM=${{ matrix.platform }} TROLLSTORE_JIT_ENT=1
+            run_make "tvOS TrollStore TIPA" BOOTJDK="$BOOTJDK" JAVAC="$JAVAC_CMD" JAVA_HOME="$JAVA_HOME" -j1 dsym package PLATFORM=${{ matrix.platform }} TROLLSTORE_JIT_ENT=1 || BUILD_FAILED=1
           else
-            $MAKE_CMD BOOTJDK="$BOOTJDK" JAVAC="$JAVAC_CMD" JAVA_HOME="$JAVA_HOME" -j1 dsym package PLATFORM=${{ matrix.platform }}
+            run_make "Generic package" BOOTJDK="$BOOTJDK" JAVAC="$JAVAC_CMD" JAVA_HOME="$JAVA_HOME" -j1 dsym package PLATFORM=${{ matrix.platform }} || BUILD_FAILED=1
+          fi
+
+          if [ "$BUILD_FAILED" -ne 0 ]; then
+            echo "Build failed, dumping key compiler lines:"
+            grep -nE "error:|fatal error:|Undefined symbols|ld:|No such file|FAILED|Makefile:[0-9]+:" build.log | tail -n 80 || true
+            while IFS= read -r line; do
+              echo "::error::$line"
+            done < <(grep -nE "error:|fatal error:|Undefined symbols|ld:|No such file|FAILED|Makefile:[0-9]+:" build.log | tail -n 30 || true)
+            exit 1
           fi
 
 
