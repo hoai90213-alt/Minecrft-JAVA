@@ -117,7 +117,8 @@
     
     self.tableView.backgroundColor = UIColor.clearColor;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.tableView.contentInset = UIEdgeInsetsMake(8, 10, 12, 10);
+    self.tableView.contentInset = UIEdgeInsetsMake(12, 12, 16, 12);
+    self.tableView.clipsToBounds = NO;
     
     self.navigationController.toolbarHidden = NO;
     UIActivityIndicatorViewStyle indicatorStyle = UIActivityIndicatorViewStyleMedium;
@@ -180,13 +181,13 @@
         self.accountButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
 
         self.accountButton.backgroundColor = [AmethystColorPanel() colorWithAlphaComponent:0.95];
-        self.accountButton.layer.cornerRadius = 12;
+        self.accountButton.layer.cornerRadius = 14;
         self.accountButton.layer.borderWidth = 1;
         self.accountButton.layer.borderColor = [[AmethystColorAccentMuted() colorWithAlphaComponent:0.6] CGColor];
         self.accountButton.layer.shadowColor = [UIColor colorWithRed:18/255.0 green:43/255.0 blue:62/255.0 alpha:1.0].CGColor;
-        self.accountButton.layer.shadowOpacity = 0.2f;
-        self.accountButton.layer.shadowOffset = CGSizeMake(0, 9);
-        self.accountButton.layer.shadowRadius = 12.0f;
+        self.accountButton.layer.shadowOpacity = 0.3f;
+        self.accountButton.layer.shadowOffset = CGSizeMake(0, 12);
+        self.accountButton.layer.shadowRadius = 16.0f;
         self.accountButton.clipsToBounds = NO;
         self.accountButton.contentEdgeInsets = UIEdgeInsetsMake(6, 8, 6, 10);
         self.accountButton.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];
@@ -216,7 +217,7 @@
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return 64.0;
+    return 72.0;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -228,6 +229,7 @@
     }
 
     cell.backgroundColor = UIColor.clearColor;
+    cell.clipsToBounds = NO;
     cell.textLabel.textColor = UIColor.labelColor;
     cell.tintColor = AmethystColorAccent();
     UIView *background = [[UIView alloc] init];
@@ -235,7 +237,7 @@
     cell.backgroundView = background;
     UIView *selectedBackground = [[UIView alloc] init];
     selectedBackground.backgroundColor = [AmethystColorAccent() colorWithAlphaComponent:0.22];
-    selectedBackground.layer.cornerRadius = 14;
+    selectedBackground.layer.cornerRadius = 18;
     selectedBackground.layer.masksToBounds = YES;
     cell.selectedBackgroundView = selectedBackground;
 

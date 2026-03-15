@@ -35,7 +35,10 @@
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
     self.tableView.backgroundColor = UIColor.clearColor;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.tableView.contentInset = UIEdgeInsetsMake(8, 6, 12, 6);
+    self.tableView.contentInset = UIEdgeInsetsMake(10, 8, 16, 8);
+    self.tableView.clipsToBounds = NO;
+    self.tableView.rowHeight = UITableViewAutomaticDimension;
+    self.tableView.estimatedRowHeight = 72;
     if (self.prefSections) {
         self.prefSectionsVisibility = [[NSMutableArray<NSNumber *> alloc] initWithCapacity:self.prefSections.count];
         for (int i = 0; i < self.prefSections.count; i++) {
@@ -130,6 +133,7 @@
     cell.textLabel.textColor = nil;
     cell.detailTextLabel.text = nil;
     cell.backgroundColor = UIColor.clearColor;
+    cell.clipsToBounds = NO;
     cell.tintColor = AmethystColorAccent();
 
     NSString *key = item[@"key"];
@@ -160,7 +164,7 @@
     cell.backgroundView = background;
     UIView *selectedBackground = [[UIView alloc] init];
     selectedBackground.backgroundColor = [AmethystColorAccent() colorWithAlphaComponent:0.22];
-    selectedBackground.layer.cornerRadius = 14;
+    selectedBackground.layer.cornerRadius = 18;
     selectedBackground.layer.masksToBounds = YES;
     cell.selectedBackgroundView = selectedBackground;
     
@@ -211,6 +215,11 @@
         //view.nonEditingLinebreakMode = NSLineBreakByCharWrapping;
         view.returnKeyType = UIReturnKeyDone;
         view.textAlignment = NSTextAlignmentRight;
+        view.backgroundColor = [AmethystColorPanel() colorWithAlphaComponent:0.94];
+        view.layer.cornerRadius = 10.0;
+        view.layer.borderWidth = 1.0;
+        view.layer.borderColor = [AmethystColorAccentMuted() colorWithAlphaComponent:0.62].CGColor;
+        view.layer.masksToBounds = YES;
         view.placeholder = localize((item[@"placeholder"] ? item[@"placeholder"] :
             [NSString stringWithFormat:@"preference.placeholder.%@", key]), nil);
         view.text = weakSelf.getPreference(section, key);
@@ -231,6 +240,7 @@
         view.maximumValue = [item[@"max"] intValue];
         view.continuous = YES;
         view.value = [weakSelf.getPreference(section, key) intValue];
+        view.tintColor = AmethystColorAccent();
         cell.accessoryView = view;
     };
 
@@ -242,6 +252,7 @@
         } else {
             [view setOn:[weakSelf.getPreference(section, key) isEqualToString:customSwitchValue[1]] animated:NO];
         }
+        view.onTintColor = AmethystColorAccent();
         [view addTarget:weakSelf action:@selector(switchChanged:) forControlEvents:UIControlEventValueChanged];
         cell.accessoryView = view;
     };

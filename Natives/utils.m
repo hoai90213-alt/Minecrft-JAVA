@@ -1,6 +1,5 @@
 #import <SafariServices/SafariServices.h>
 #import <QuartzCore/QuartzCore.h>
-#import <objc/runtime.h>
 
 #include "jni.h"
 #include <dlfcn.h>
@@ -254,7 +253,7 @@ void AmethystApplyCardStyle(UIView *view) {
     UIColor *glossBottom = [UIColor colorWithWhite:1.0 alpha:0.03];
 
     view.backgroundColor = [panel colorWithAlphaComponent:0.92];
-    view.layer.cornerRadius = 16.0;
+    view.layer.cornerRadius = 18.0;
     if (@available(iOS 13.0, *)) {
         view.layer.cornerCurve = kCACornerCurveContinuous;
     }
@@ -262,9 +261,9 @@ void AmethystApplyCardStyle(UIView *view) {
     view.layer.borderColor = border.CGColor;
     view.layer.masksToBounds = NO;
     view.layer.shadowColor = shadowColor.CGColor;
-    view.layer.shadowOpacity = 0.24f;
-    view.layer.shadowOffset = CGSizeMake(0, 14);
-    view.layer.shadowRadius = 20.0f;
+    view.layer.shadowOpacity = 0.34f;
+    view.layer.shadowOffset = CGSizeMake(0, 18);
+    view.layer.shadowRadius = 28.0f;
 
     static NSString * const kGlossLayerName = @"amethyst.card.gloss";
     NSMutableArray<CALayer *> *layersToRemove = [NSMutableArray array];
@@ -289,7 +288,7 @@ void AmethystApplyCardStyle(UIView *view) {
     gloss.autoresizingMask = kCALayerWidthSizable | kCALayerHeightSizable;
     [view.layer insertSublayer:gloss atIndex:0];
 
-    AmethystApplyParallaxEffect(view, 4.5);
+    AmethystApplyParallaxEffect(view, 6.5);
 }
 
 void AmethystApplyPrimaryButtonStyle(UIButton *button) {
@@ -299,19 +298,19 @@ void AmethystApplyPrimaryButtonStyle(UIButton *button) {
     UIColor *accent = AmethystColorAccent();
     UIColor *shadowColor = AmethystResolveColor(AmethystDynamicColor(0.04, 0.31, 0.22, 0.00, 0.15, 0.10), button.traitCollection);
     button.backgroundColor = accent;
-    button.layer.cornerRadius = 12.0;
+    button.layer.cornerRadius = 14.0;
     if (@available(iOS 13.0, *)) {
         button.layer.cornerCurve = kCACornerCurveContinuous;
     }
     button.layer.borderWidth = 1.0;
     button.layer.borderColor = [UIColor colorWithWhite:1.0 alpha:0.25].CGColor;
     button.layer.shadowColor = shadowColor.CGColor;
-    button.layer.shadowOpacity = 0.44f;
-    button.layer.shadowOffset = CGSizeMake(0, 12);
-    button.layer.shadowRadius = 16.0f;
+    button.layer.shadowOpacity = 0.52f;
+    button.layer.shadowOffset = CGSizeMake(0, 14);
+    button.layer.shadowRadius = 22.0f;
     button.clipsToBounds = NO;
     [button setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
-    AmethystApplyParallaxEffect(button, 6.0);
+    AmethystApplyParallaxEffect(button, 8.0);
 }
 
 void AmethystApplyPanelBackground(UIView *view) {
@@ -362,8 +361,8 @@ void AmethystApplyPanelBackground(UIView *view) {
     UIColor *topColor = AmethystResolveColor(AmethystDynamicColor(0.92, 0.96, 0.99, 0.07, 0.09, 0.12), view.traitCollection);
     UIColor *middleColor = AmethystResolveColor(AmethystDynamicColor(0.87, 0.95, 0.93, 0.05, 0.08, 0.09), view.traitCollection);
     UIColor *bottomColor = AmethystResolveColor(AmethystDynamicColor(0.84, 0.91, 0.95, 0.03, 0.04, 0.06), view.traitCollection);
-    UIColor *glowColor = [AmethystResolveColor(AmethystColorAccent(), view.traitCollection) colorWithAlphaComponent:0.20];
-    UIColor *orbStrong = [AmethystResolveColor(AmethystColorAccent(), view.traitCollection) colorWithAlphaComponent:0.26];
+    UIColor *glowColor = [AmethystResolveColor(AmethystColorAccent(), view.traitCollection) colorWithAlphaComponent:0.28];
+    UIColor *orbStrong = [AmethystResolveColor(AmethystColorAccent(), view.traitCollection) colorWithAlphaComponent:0.34];
 
     baseLayer.frame = background.bounds;
     baseLayer.startPoint = CGPointMake(0, 0);

@@ -43,7 +43,8 @@
 
     self.tableView.backgroundColor = UIColor.clearColor;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.tableView.contentInset = UIEdgeInsetsMake(8, 6, 10, 6);
+    self.tableView.contentInset = UIEdgeInsetsMake(10, 8, 12, 8);
+    self.tableView.clipsToBounds = NO;
 }
 
 - (void)viewDidLayoutSubviews {
@@ -64,13 +65,14 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"cell"];
     }
     cell.backgroundColor = UIColor.clearColor;
+    cell.clipsToBounds = NO;
     cell.tintColor = AmethystColorAccent();
     UIView *background = [[UIView alloc] init];
     AmethystApplyCardStyle(background);
     cell.backgroundView = background;
     UIView *selectedBackground = [[UIView alloc] init];
     selectedBackground.backgroundColor = [AmethystColorAccent() colorWithAlphaComponent:0.22];
-    selectedBackground.layer.cornerRadius = 14;
+    selectedBackground.layer.cornerRadius = 18;
     selectedBackground.layer.masksToBounds = YES;
     cell.selectedBackgroundView = selectedBackground;
 
@@ -98,6 +100,10 @@
     [cell.imageView setImageWithURL:[NSURL URLWithString:[selected[@"profilePicURL"] stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"]] placeholderImage:[UIImage imageNamed:@"DefaultAccount"]];
 
     return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return 72.0;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {

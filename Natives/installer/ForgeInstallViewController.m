@@ -173,7 +173,8 @@
     self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAutomatic;
     self.tableView.backgroundColor = UIColor.clearColor;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.tableView.contentInset = UIEdgeInsetsMake(8, 6, 12, 6);
+    self.tableView.contentInset = UIEdgeInsetsMake(12, 8, 16, 8);
+    self.tableView.clipsToBounds = NO;
     
     self.extendedLayoutIncludesOpaqueBars = NO;
     self.edgesForExtendedLayout = UIRectEdgeNone;
@@ -712,19 +713,20 @@
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return 56.0; 
+    return 72.0; 
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     ForgeVersionCell *cell = [tableView dequeueReusableCellWithIdentifier:@"ForgeVersionCell" forIndexPath:indexPath];
     cell.backgroundColor = UIColor.clearColor;
+    cell.clipsToBounds = NO;
     cell.tintColor = AmethystColorAccent();
     UIView *background = [[UIView alloc] init];
     AmethystApplyCardStyle(background);
     cell.backgroundView = background;
     UIView *selectedBackground = [[UIView alloc] init];
     selectedBackground.backgroundColor = [AmethystColorAccent() colorWithAlphaComponent:0.22];
-    selectedBackground.layer.cornerRadius = 14;
+    selectedBackground.layer.cornerRadius = 18;
     selectedBackground.layer.masksToBounds = YES;
     cell.selectedBackgroundView = selectedBackground;
     

@@ -75,13 +75,13 @@ static void *ProgressObserverContext = &ProgressObserverContext;
     self.versionTextField.backgroundColor = [AmethystColorPanel() colorWithAlphaComponent:0.90];
     self.versionTextField.textColor = UIColor.labelColor;
     self.versionTextField.tintColor = accent;
-    self.versionTextField.layer.cornerRadius = 12;
+    self.versionTextField.layer.cornerRadius = 14;
     self.versionTextField.layer.borderWidth = 1;
     self.versionTextField.layer.borderColor = border.CGColor;
     self.versionTextField.layer.shadowColor = [UIColor colorWithRed:18/255.0 green:46/255.0 blue:66/255.0 alpha:1.0].CGColor;
-    self.versionTextField.layer.shadowOpacity = 0.18f;
-    self.versionTextField.layer.shadowOffset = CGSizeMake(0, 10);
-    self.versionTextField.layer.shadowRadius = 14.0f;
+    self.versionTextField.layer.shadowOpacity = 0.28f;
+    self.versionTextField.layer.shadowOffset = CGSizeMake(0, 14);
+    self.versionTextField.layer.shadowRadius = 20.0f;
     self.versionTextField.clipsToBounds = NO;
     AmethystApplyParallaxEffect(self.versionTextField, 3.5);
 
