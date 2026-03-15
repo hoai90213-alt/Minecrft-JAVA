@@ -207,8 +207,7 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
 
     int allocmem;
     if (getPrefBool(@"java.auto_ram")) {
-        CGFloat autoRatio = getEntitlementValue(@"com.apple.private.memorystatus") ? 0.4 : 0.25;
-        allocmem = roundf((NSProcessInfo.processInfo.physicalMemory >> 20) * autoRatio);
+        allocmem = (int)getRecommendedAllocatedMemoryMB();
     } else {
         allocmem = getPrefInt(@"java.allocated_memory");
     }

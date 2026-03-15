@@ -97,6 +97,18 @@ UIEdgeInsets getDefaultSafeArea() {
 }
 
 #pragma mark Java runtime
+NSInteger getRecommendedAllocatedMemoryMB(void) {
+    BOOL hasMemEntitlement = getEntitlementValue(@"com.apple.private.memorystatus");
+    CGFloat totalMemoryMB = (CGFloat)(NSProcessInfo.processInfo.physicalMemory / 1048576.0);
+    CGFloat ratio = hasMemEntitlement ? 0.4f : 0.25f;
+    NSInteger minMB = hasMemEntitlement ? 1024 : 768;
+    NSInteger maxMB = hasMemEntitlement ? 4096 : 2048;
+
+    NSInteger recommended = (NSInteger)roundf(totalMemoryMB * ratio);
+    if (recommended < minMB) recommended = minMB;
+    if (recommended > maxMB) recommended = maxMB;
+    return recommended;
+}
 
 NSString* getSelectedJavaHome(NSString* defaultJRETag, int minVersion) {
     NSDictionary *pref = getPrefObject(@"java.java_homes");
