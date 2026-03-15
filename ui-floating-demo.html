@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Amethyst Floating UI Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-a: #e9f5ff;
+      --bg-b: #f2fff5;
+      --bg-c: #fff6eb;
+      --ink: #122133;
+      --muted: #5f7387;
+      --accent: #1fba89;
+      --accent-strong: #12a778;
+      --line: rgba(18, 33, 51, 0.12);
+      --glass: rgba(255, 255, 255, 0.72);
+      --glass-strong: rgba(255, 255, 255, 0.88);
+      --shadow: 0 16px 40px rgba(22, 45, 68, 0.16);
+      --shadow-hard: 0 36px 70px rgba(20, 42, 63, 0.28);
+      --shadow-soft: 0 18px 34px rgba(20, 42, 63, 0.14);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Sora", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1100px 600px at 12% -10%, #d5ebff 0%, transparent 62%),
+        radial-gradient(900px 520px at 108% 12%, #c8ffe8 0%, transparent 60%),
+        linear-gradient(140deg, var(--bg-a), var(--bg-b) 46%, var(--bg-c));
+      overflow-x: hidden;
+    }
+
+    .scene {
+      perspective: 1800px;
+      transform-style: preserve-3d;
+      padding: 1px 0;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      border-radius: 999px;
+      filter: blur(30px);
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 0;
+      animation: drift 12s ease-in-out infinite;
+    }
+
+    body::before {
+      width: 240px;
+      height: 240px;
+      background: #76d8ff;
+      left: -60px;
+      top: 120px;
+    }
+
+    body::after {
+      width: 290px;
+      height: 290px;
+      background: #99ffc5;
+      right: -80px;
+      bottom: 80px;
+      animation-delay: -6s;
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      width: min(1180px, calc(100vw - 28px));
+      margin: 18px auto;
+      display: grid;
+      grid-template-columns: 290px minmax(0, 1fr);
+      gap: 16px;
+      min-height: calc(100vh - 36px);
+      animation: rise 700ms cubic-bezier(.2, .8, .2, 1);
+      transform-style: preserve-3d;
+      transform:
+        rotateX(var(--rx, 0deg))
+        rotateY(var(--ry, 0deg))
+        translateZ(0);
+      transition: transform 120ms linear;
+    }
+
+    .app::before {
+      content: "";
+      position: absolute;
+      inset: auto 8% -34px;
+      height: 44px;
+      border-radius: 999px;
+      background: rgba(9, 33, 54, 0.28);
+      filter: blur(22px);
+      z-index: -1;
+      transform: translateZ(-38px);
+      pointer-events: none;
+    }
+
+    .glass {
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      background: var(--glass);
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      box-shadow: var(--shadow-hard);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.7), transparent 45%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glass > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .sidebar {
+      border-radius: var(--radius-xl);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transform: translateZ(26px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 10px;
+      border-radius: var(--radius-md);
+      background: var(--glass-strong);
+      border: 1px solid var(--line);
+    }
+
+    .logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: linear-gradient(150deg, #44c5ff, #1fba89);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 0.4px;
+      box-shadow: 0 8px 16px rgba(31, 186, 137, 0.32);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.25;
+    }
+
+    .brand p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 10px;
+    }
+
+    .nav-item {
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.56);
+      color: var(--ink);
+      border-radius: var(--radius-md);
+      padding: 11px 13px;
+      font: inherit;
+      font-weight: 600;
+      text-align: left;
+      transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
+      cursor: pointer;
+    }
+
+    .nav-item:hover {
+      transform: translateY(-1px);
+      border-color: rgba(31, 186, 137, 0.4);
+      background: #fff;
+    }
+
+    .nav-item.active {
+      color: #fff;
+      border-color: rgba(31, 186, 137, 0.55);
+      background: linear-gradient(135deg, #1fba89, #26c8a2);
+      box-shadow: 0 10px 18px rgba(31, 186, 137, 0.34);
+    }
+
+    .account {
+      margin-top: auto;
+      border-radius: var(--radius-lg);
+      background: var(--glass-strong);
+      border: 1px solid var(--line);
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #ffe1b0, #ffd38e);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: #724d17;
+      font-size: 12px;
+    }
+
+    .account b {
+      display: block;
+      font-size: 13px;
+    }
+
+    .account span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .main {
+      border-radius: var(--radius-xl);
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+      transform: translateZ(34px);
+    }
+
+    .toolbar {
+      border-radius: var(--radius-lg);
+      padding: 10px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      background: var(--glass-strong);
+      border: 1px solid var(--line);
+      transform: translateZ(18px);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .version {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 11px 12px;
+      font: inherit;
+      font-size: 13px;
+      color: var(--ink);
+      background: #fff;
+      width: 100%;
+      outline: none;
+    }
+
+    .play-btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 18px;
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      box-shadow: 0 12px 20px rgba(31, 186, 137, 0.35);
+      cursor: pointer;
+      transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease;
+    }
+
+    .play-btn:hover {
+      transform: translateY(-2px) translateZ(8px);
+      box-shadow: 0 18px 28px rgba(31, 186, 137, 0.45);
+      filter: saturate(1.06);
+    }
+
+    .hero {
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      background: linear-gradient(130deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.72));
+      border: 1px solid var(--line);
+      position: relative;
+      overflow: hidden;
+      transform: translateZ(20px);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(31, 186, 137, 0.28), transparent 65%);
+      right: -70px;
+      top: -70px;
+      pointer-events: none;
+    }
+
+    .hero h2 {
+      margin: 0 0 6px;
+      font-size: clamp(18px, 2.4vw, 24px);
+      line-height: 1.25;
+      max-width: 620px;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      max-width: 630px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      border-radius: 16px;
+      background: var(--glass-strong);
+      border: 1px solid var(--line);
+      padding: 14px;
+      box-shadow: 0 14px 24px rgba(31, 60, 92, 0.16);
+      transform: translateY(6px) translateZ(8px);
+      opacity: 0;
+      animation: reveal 520ms cubic-bezier(.2, .8, .2, 1) forwards;
+      transform-style: preserve-3d;
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+      will-change: transform;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(145deg, rgba(255,255,255,0.65), transparent 52%);
+      pointer-events: none;
+    }
+
+    .card:hover {
+      transform:
+        translateY(-6px)
+        translateZ(26px)
+        rotateX(calc(var(--tx, 0deg)))
+        rotateY(calc(var(--ty, 0deg)));
+      box-shadow: 0 24px 36px rgba(31, 60, 92, 0.23);
+      border-color: rgba(31, 186, 137, 0.4);
+    }
+
+    .card:nth-child(2) { animation-delay: 70ms; }
+    .card:nth-child(3) { animation-delay: 140ms; }
+    .card:nth-child(4) { animation-delay: 210ms; }
+    .card:nth-child(5) { animation-delay: 280ms; }
+    .card:nth-child(6) { animation-delay: 350ms; }
+
+    .card h3 {
+      margin: 0 0 6px;
+      font-size: 14px;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .pill {
+      display: inline-block;
+      margin-top: 10px;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #126547;
+      background: rgba(31, 186, 137, 0.16);
+      transform: translateZ(14px);
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        grid-template-columns: 1fr;
+        width: min(920px, calc(100vw - 20px));
+        transform: none !important;
+      }
+
+      .sidebar {
+        order: 2;
+        margin-bottom: 6px;
+      }
+
+      .main {
+        order: 1;
+      }
+
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar,
+      .main {
+        border-radius: 20px;
+      }
+    }
+
+    @media (hover: none) {
+      .app {
+        transform: none !important;
+      }
+
+      .card:hover {
+        transform: translateY(-2px) translateZ(10px);
+      }
+    }
+
+    @keyframes rise {
+      from {
+        transform: translateY(10px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes reveal {
+      to {
+        transform: translateY(0) translateZ(8px);
+        opacity: 1;
+      }
+    }
+
+    @keyframes drift {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-12px) scale(1.03); }
+    }
+  </style>
+</head>
+<body>
+  <div class="scene">
+  <div class="app" id="app3d">
+    <aside class="sidebar glass">
+      <div class="brand">
+        <div class="logo">AM</div>
+        <div>
+          <h1>Amethyst Launcher</h1>
+          <p>Floating UI demo</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item">Tin tuc</button>
+        <button class="nav-item active">Profiles</button>
+        <button class="nav-item">Settings</button>
+        <button class="nav-item">Custom Controls</button>
+        <button class="nav-item">Install Mod</button>
+      </nav>
+
+      <div class="account">
+        <div class="avatar">HN</div>
+        <div>
+          <b>hoai90213</b>
+          <span>Microsoft account</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main glass">
+      <section class="toolbar">
+        <input class="version" value="Profile: Fabric 1.20.1" aria-label="Version">
+        <button class="play-btn">Play</button>
+      </section>
+
+      <section class="hero">
+        <h2>Phong cach noi, bo goc lon, depth ro rang va nhan dien thao tac nhanh</h2>
+        <p>Ban demo HTML nay mo phong launcher layout: sidebar, profile area, setting cards. Neu ban ok style nay, minh se apply lai sang native iOS screens.</p>
+      </section>
+
+      <section class="grid">
+        <article class="card" data-tilt>
+          <h3>Renderer</h3>
+          <p>MobileGlues + shader compatibility profile.</p>
+          <span class="pill">Balanced</span>
+        </article>
+        <article class="card" data-tilt>
+          <h3>Memory</h3>
+          <p>Auto RAM active, gioi han theo may de on dinh.</p>
+          <span class="pill">Auto</span>
+        </article>
+        <article class="card" data-tilt>
+          <h3>Controls</h3>
+          <p>Touch + gamepad mapping theo profile hien tai.</p>
+          <span class="pill">Synced</span>
+        </article>
+        <article class="card" data-tilt>
+          <h3>Modpack</h3>
+          <p>Cho cap nhat source installer (Modrinth/CF).</p>
+          <span class="pill">Ready</span>
+        </article>
+        <article class="card" data-tilt>
+          <h3>JIT</h3>
+          <p>Kiem tra JIT ngay truoc khi launch game.</p>
+          <span class="pill">Monitor</span>
+        </article>
+        <article class="card" data-tilt>
+          <h3>Build</h3>
+          <p>Sau khi duyet UI, minh tiep tuc patch native UI tung man.</p>
+          <span class="pill">Next step</span>
+        </article>
+      </section>
+    </main>
+  </div>
+  </div>
+  <script>
+    (function () {
+      var app = document.getElementById("app3d");
+      if (!app || window.matchMedia("(hover: none)").matches) return;
+
+      var cards = Array.prototype.slice.call(document.querySelectorAll("[data-tilt]"));
+
+      function moveApp(e) {
+        var rect = app.getBoundingClientRect();
+        var px = (e.clientX - rect.left) / rect.width - 0.5;
+        var py = (e.clientY - rect.top) / rect.height - 0.5;
+        app.style.setProperty("--ry", (px * 4.2).toFixed(2) + "deg");
+        app.style.setProperty("--rx", (-py * 3.2).toFixed(2) + "deg");
+      }
+
+      function resetApp() {
+        app.style.setProperty("--ry", "0deg");
+        app.style.setProperty("--rx", "0deg");
+      }
+
+      app.addEventListener("mousemove", moveApp);
+      app.addEventListener("mouseleave", resetApp);
+
+      cards.forEach(function (card) {
+        card.addEventListener("mousemove", function (e) {
+          var r = card.getBoundingClientRect();
+          var x = (e.clientX - r.left) / r.width - 0.5;
+          var y = (e.clientY - r.top) / r.height - 0.5;
+          card.style.setProperty("--ty", (x * 5).toFixed(2) + "deg");
+          card.style.setProperty("--tx", (-y * 4).toFixed(2) + "deg");
+        });
+        card.addEventListener("mouseleave", function () {
+          card.style.setProperty("--ty", "0deg");
+          card.style.setProperty("--tx", "0deg");
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

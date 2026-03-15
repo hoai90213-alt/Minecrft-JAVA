@@ -24,6 +24,8 @@ UIEdgeInsets insets;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    self.view.backgroundColor = UIColor.clearColor;
+    AmethystApplyPanelBackground(self.view);
     
     CGSize size = CGSizeMake(self.view.frame.size.width, self.view.frame.size.height);
     insets = UIApplication.sharedApplication.windows.firstObject.safeAreaInsets;
@@ -36,6 +38,8 @@ UIEdgeInsets insets;
     webView.translatesAutoresizingMaskIntoConstraints = NO;
     webView.navigationDelegate = self;
     webView.opaque = NO;
+    webView.backgroundColor = UIColor.clearColor;
+    webView.scrollView.backgroundColor = UIColor.clearColor;
     [self adjustWebViewForSize:size];
     webView.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     NSString *javascript = @"var meta = document.createElement('meta');meta.setAttribute('name', 'viewport');meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');document.getElementsByTagName('head')[0].appendChild(meta);";
@@ -53,6 +57,11 @@ UIEdgeInsets insets;
     self.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
     self.navigationItem.rightBarButtonItem = [sidebarViewController drawAccountButton];
     self.navigationItem.leftItemsSupplementBackButton = true;
+}
+
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+    AmethystApplyPanelBackground(self.view);
 }
 
 -(void)showWarningAlert:(NSString *)key hasPreference:(BOOL)isPreferenced exitWhenCompleted:(BOOL)shouldExit {

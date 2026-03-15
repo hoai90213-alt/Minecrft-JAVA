@@ -82,6 +82,14 @@ void openLink(UIViewController* sender, NSURL* link);
 NSString* localize(NSString* key, NSString* comment);
 NSMutableDictionary* parseJSONFromFile(NSString *path);
 NSError* saveJSONToFile(NSDictionary *dict, NSString *path);
+UIColor* AmethystColorAccent(void);
+UIColor* AmethystColorAccentMuted(void);
+UIColor* AmethystColorPanel(void);
+void AmethystApplyGlobalAppearance(void);
+void AmethystApplyPanelBackground(UIView *view);
+void AmethystApplyCardStyle(UIView *view);
+void AmethystApplyParallaxEffect(UIView *view, CGFloat amount);
+void AmethystApplyPrimaryButtonStyle(UIButton *button);
 void customNSLog(const char *file, int lineNumber, const char *functionName, NSString *format, ...);
 
 static inline CGFloat clamp(CGFloat x, CGFloat lower, CGFloat upper) {
