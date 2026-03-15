@@ -153,8 +153,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.view.backgroundColor = UIColor.clearColor;
-    AmethystApplyPanelBackground(self.view);
     
     if (self.navigationController) {
         self.navigationController.navigationBar.translucent = NO;
@@ -171,9 +169,6 @@
     }
     
     self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAutomatic;
-    self.tableView.backgroundColor = UIColor.clearColor;
-    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.tableView.contentInset = UIEdgeInsetsMake(8, 6, 12, 6);
     
     self.extendedLayoutIncludesOpaqueBars = NO;
     self.edgesForExtendedLayout = UIRectEdgeNone;
@@ -227,11 +222,6 @@
     self.searchQueue = dispatch_queue_create("com.amethyst.forge.search", DISPATCH_QUEUE_SERIAL);
     
     [self loadMetadataFromVendor:@"Forge"];
-}
-
-- (void)viewDidLayoutSubviews {
-    [super viewDidLayoutSubviews];
-    AmethystApplyPanelBackground(self.view);
 }
 
 - (void)dealloc {
@@ -717,16 +707,6 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     ForgeVersionCell *cell = [tableView dequeueReusableCellWithIdentifier:@"ForgeVersionCell" forIndexPath:indexPath];
-    cell.backgroundColor = UIColor.clearColor;
-    cell.tintColor = AmethystColorAccent();
-    UIView *background = [[UIView alloc] init];
-    AmethystApplyCardStyle(background);
-    cell.backgroundView = background;
-    UIView *selectedBackground = [[UIView alloc] init];
-    selectedBackground.backgroundColor = [AmethystColorAccent() colorWithAlphaComponent:0.22];
-    selectedBackground.layer.cornerRadius = 14;
-    selectedBackground.layer.masksToBounds = YES;
-    cell.selectedBackgroundView = selectedBackground;
     
     if (self.isDataLoading) {
         cell.versionLabel.text = @"Loading...";

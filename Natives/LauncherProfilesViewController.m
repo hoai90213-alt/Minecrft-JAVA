@@ -43,8 +43,6 @@ typedef NS_ENUM(NSUInteger, LauncherProfilesTableSection) {
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.view.backgroundColor = UIColor.clearColor;
-    AmethystApplyPanelBackground(self.view);
 
     UIMenu *createMenu = [UIMenu menuWithTitle:localize(@"profile.title.create", nil) image:nil identifier:nil
     options:UIMenuOptionsDisplayInline
@@ -81,9 +79,6 @@ typedef NS_ENUM(NSUInteger, LauncherProfilesTableSection) {
 
     self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleInsetGrouped];
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
-    self.tableView.backgroundColor = UIColor.clearColor;
-    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.tableView.contentInset = UIEdgeInsetsMake(8, 6, 12, 6);
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -96,11 +91,6 @@ typedef NS_ENUM(NSUInteger, LauncherProfilesTableSection) {
     [PLProfiles updateCurrent];
     [self.tableView reloadData];
     [self.navigationController performSelector:@selector(reloadProfileList)];
-}
-
-- (void)viewDidLayoutSubviews {
-    [super viewDidLayoutSubviews];
-    AmethystApplyPanelBackground(self.view);
 }
 
 - (void)actionTogglePrefIsolation:(UISwitch *)sender {
@@ -218,23 +208,8 @@ typedef NS_ENUM(NSUInteger, LauncherProfilesTableSection) {
         [self setupProfileCell:cell atRow:indexPath.row];
     }
 
-    cell.backgroundColor = UIColor.clearColor;
-    cell.tintColor = AmethystColorAccent();
-    UIView *background = [[UIView alloc] init];
-    AmethystApplyCardStyle(background);
-    cell.backgroundView = background;
-    UIView *selectedBackground = [[UIView alloc] init];
-    selectedBackground.backgroundColor = [AmethystColorAccent() colorWithAlphaComponent:0.22];
-    selectedBackground.layer.cornerRadius = 14;
-    selectedBackground.layer.masksToBounds = YES;
-    cell.selectedBackgroundView = selectedBackground;
-
     cell.textLabel.enabled = cell.detailTextLabel.enabled = cell.userInteractionEnabled;
     return cell;
-}
-
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return 64.0;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {

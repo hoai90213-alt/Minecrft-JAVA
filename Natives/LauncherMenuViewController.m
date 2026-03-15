@@ -51,8 +51,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.view.backgroundColor = UIColor.clearColor;
-    AmethystApplyPanelBackground(self.view);
     
     self.isInitialVc = YES;
     
@@ -115,9 +113,7 @@
         }]];
     }
     
-    self.tableView.backgroundColor = UIColor.clearColor;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.tableView.contentInset = UIEdgeInsetsMake(8, 10, 12, 10);
     
     self.navigationController.toolbarHidden = NO;
     UIActivityIndicatorViewStyle indicatorStyle = UIActivityIndicatorViewStyleMedium;
@@ -127,7 +123,7 @@
         [[UIBarButtonItem alloc] initWithCustomView:toolbarIndicator],
         [[UIBarButtonItem alloc] init]
     ];
-    self.toolbarItems[1].tintColor = AmethystColorAccent();
+    self.toolbarItems[1].tintColor = UIColor.labelColor;
     
     // Setup the account button
     self.accountBtnItem = [self drawAccountButton];
@@ -168,24 +164,11 @@
     [self restoreHighlightedSelection];
 }
 
-- (void)viewDidLayoutSubviews {
-    [super viewDidLayoutSubviews];
-    AmethystApplyPanelBackground(self.view);
-}
-
 - (UIBarButtonItem *)drawAccountButton {
     if (!self.accountBtnItem) {
         self.accountButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [self.accountButton addTarget:self action:@selector(selectAccount:) forControlEvents:UIControlEventPrimaryActionTriggered];
         self.accountButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
-
-        self.accountButton.backgroundColor = [AmethystColorPanel() colorWithAlphaComponent:0.95];
-        self.accountButton.layer.cornerRadius = 12;
-        self.accountButton.layer.borderWidth = 1;
-        self.accountButton.layer.borderColor = [[AmethystColorAccentMuted() colorWithAlphaComponent:0.6] CGColor];
-        self.accountButton.contentEdgeInsets = UIEdgeInsetsMake(6, 8, 6, 10);
-        self.accountButton.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];
-        [self.accountButton setTitleColor:UIColor.labelColor forState:UIControlStateNormal];
 
         self.accountButton.titleEdgeInsets = UIEdgeInsetsMake(0, 4, 0, -4);
         self.accountButton.imageView.contentMode = UIViewContentModeScaleAspectFit;
@@ -209,29 +192,12 @@
     return self.options.count;
 }
 
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return 64.0;
-}
-
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
     if (cell == nil) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];
-        cell.textLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightSemibold];
     }
-
-    cell.backgroundColor = UIColor.clearColor;
-    cell.textLabel.textColor = UIColor.labelColor;
-    cell.tintColor = AmethystColorAccent();
-    UIView *background = [[UIView alloc] init];
-    AmethystApplyCardStyle(background);
-    cell.backgroundView = background;
-    UIView *selectedBackground = [[UIView alloc] init];
-    selectedBackground.backgroundColor = [AmethystColorAccent() colorWithAlphaComponent:0.22];
-    selectedBackground.layer.cornerRadius = 14;
-    selectedBackground.layer.masksToBounds = YES;
-    cell.selectedBackgroundView = selectedBackground;
 
     cell.textLabel.text = [self.options[indexPath.row] title];
     
@@ -311,12 +277,7 @@
     
     if (selected == nil) {
         if((size.width / 3) > 200) {
-            NSAttributedString *title = [[NSAttributedString alloc] initWithString:localize(@"login.option.select", nil)
-                                                                         attributes:@{
-                NSFontAttributeName: [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold],
-                NSForegroundColorAttributeName: UIColor.labelColor
-            }];
-            [self.accountButton setAttributedTitle:title forState:UIControlStateNormal];
+            [self.accountButton setAttributedTitle:[[NSAttributedString alloc] initWithString:localize(@"login.option.select", nil)] forState:UIControlStateNormal];
         } else {
             [self.accountButton setAttributedTitle:(NSAttributedString *)@"" forState:UIControlStateNormal];
         }
@@ -327,12 +288,7 @@
 
     // Remove the prefix "Demo." if there is
     BOOL isDemo = [selected[@"username"] hasPrefix:@"Demo."];
-    NSMutableAttributedString *title = [[NSMutableAttributedString alloc]
-        initWithString:[selected[@"username"] substringFromIndex:(isDemo?5:0)]
-        attributes:@{
-            NSFontAttributeName: [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold],
-            NSForegroundColorAttributeName: UIColor.labelColor
-        }];
+    NSMutableAttributedString *title = [[NSMutableAttributedString alloc] initWithString:[selected[@"username"] substringFromIndex:(isDemo?5:0)]];
 
     // Check if we're switching between demo and full mode
     BOOL shouldUpdateProfiles = (getenv("DEMO_LOCK")!=NULL) != isDemo;
@@ -353,10 +309,7 @@
         subtitle = selected[@"xboxGamertag"];
     }
 
-    subtitle = [[NSAttributedString alloc] initWithString:subtitle attributes:@{
-        NSFontAttributeName: [UIFont systemFontOfSize:12 weight:UIFontWeightRegular],
-        NSForegroundColorAttributeName: UIColor.secondaryLabelColor
-    }];
+    subtitle = [[NSAttributedString alloc] initWithString:subtitle attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:12]}];
     [title appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n" attributes:nil]];
     [title appendAttributedString:subtitle];
     
