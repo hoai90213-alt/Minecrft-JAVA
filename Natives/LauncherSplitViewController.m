@@ -18,6 +18,7 @@ extern NSMutableDictionary *prefDict;
     AmethystApplyVisionAppearance();
     self.view.backgroundColor = UIColor.systemBackgroundColor;
     AmethystApplyVisionBackground(self.view);
+    UIUserInterfaceIdiom uiIdiom = UIDevice.currentDevice.userInterfaceIdiom;
     if ([getPrefObject(@"control.control_safe_area") length] == 0) {
         setPrefObject(@"control.control_safe_area", NSStringFromUIEdgeInsets(getDefaultSafeArea()));
     }
@@ -32,8 +33,8 @@ extern NSMutableDictionary *prefDict;
     [self changeDisplayModeForSize:self.view.frame.size];
 
     self.minimumPrimaryColumnWidth = 280.0;
-    self.maximumPrimaryColumnWidth = realUIIdiom == UIUserInterfaceIdiomPhone ? 390.0 : self.view.bounds.size.width * 0.95;
-    self.preferredPrimaryColumnWidthFraction = realUIIdiom == UIUserInterfaceIdiomPhone ? 0.86 : 0.34;
+    self.maximumPrimaryColumnWidth = uiIdiom == UIUserInterfaceIdiomPhone ? 390.0 : self.view.bounds.size.width * 0.95;
+    self.preferredPrimaryColumnWidthFraction = uiIdiom == UIUserInterfaceIdiomPhone ? 0.86 : 0.34;
     if (@available(iOS 14.0, *)) {
         self.primaryBackgroundStyle = UISplitViewControllerBackgroundStyleSidebar;
     }
@@ -54,7 +55,7 @@ extern NSMutableDictionary *prefDict;
 }
 
 - (void)changeDisplayModeForSize:(CGSize)size {
-    if (realUIIdiom == UIUserInterfaceIdiomPhone) {
+    if (UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPhone) {
         self.preferredDisplayMode = getPrefBool(@"general.hidden_sidebar") ?
             UISplitViewControllerDisplayModeSecondaryOnly :
             UISplitViewControllerDisplayModeOneOverSecondary;
