@@ -160,7 +160,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     AmethystApplyVisionAppearance();
-    AmethystApplyVisionBackground(self.tableView);
+    AmethystApplyVisionContentTable(self.tableView);
 
     if (self.navigationController) {
         self.navigationController.navigationBar.translucent = YES;
@@ -224,6 +224,12 @@
     self.searchQueue = dispatch_queue_create("com.amethyst.forge.search", DISPATCH_QUEUE_SERIAL);
     
     [self loadMetadataFromVendor:@"Forge"];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    AmethystApplyVisionAppearance();
+    AmethystApplyVisionContentTable(self.tableView);
 }
 
 - (void)dealloc {

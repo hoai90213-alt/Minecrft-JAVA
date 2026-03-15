@@ -1,4 +1,10 @@
 #import <Foundation/Foundation.h>
+#if __has_include(<UniformTypeIdentifiers/UniformTypeIdentifiers.h>)
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#endif
+#if __has_include(<PhotosUI/PhotosUI.h>)
+#import <PhotosUI/PhotosUI.h>
+#endif
 
 #import "DBNumberedSlider.h"
 #import "HostManagerBridge.h"
@@ -14,7 +20,11 @@
 #import "ios_uikit_bridge.h"
 #import "utils.h"
 
-@interface LauncherPreferencesViewController()
+@interface LauncherPreferencesViewController()<UIDocumentPickerDelegate
+#if __has_include(<PhotosUI/PhotosUI.h>)
+, PHPickerViewControllerDelegate
+#endif
+>
 @property(nonatomic) NSArray<NSString*> *rendererKeys, *rendererList;
 @end
 
@@ -106,6 +116,51 @@
               @"icon": @"sidebar.leading",
               @"type": self.typeSwitch,
               @"enableCondition": whenNotInGame
+            },
+            @{@"key": @"dashboard_background_photo",
+              @"title": @"Dashboard Background (Photos)",
+              @"icon": @"photo.on.rectangle",
+              @"type": self.typeButton,
+              @"enableCondition": whenNotInGame,
+              @"action": ^void(){
+                  [self actionChooseDashboardBackgroundFromPhotos];
+              }
+            },
+            @{@"key": @"dashboard_background_file",
+              @"title": @"Dashboard Background (Files)",
+              @"icon": @"folder.badge.plus",
+              @"type": self.typeButton,
+              @"enableCondition": whenNotInGame,
+              @"action": ^void(){
+                  [self actionChooseDashboardBackgroundFromFiles];
+              }
+            },
+            @{@"key": @"dashboard_background_reset",
+              @"title": @"Reset Dashboard Background",
+              @"icon": @"arrow.counterclockwise",
+              @"type": self.typeButton,
+              @"enableCondition": whenNotInGame,
+              @"action": ^void(){
+                  [self actionResetDashboardBackground];
+              }
+            },
+            @{@"key": @"dashboard_blur_strength",
+              @"title": @"Dashboard Blur Strength",
+              @"hasDetail": @YES,
+              @"icon": @"drop.halffull",
+              @"type": self.typeSlider,
+              @"min": @(25),
+              @"max": @(100),
+              @"requestReload": @YES
+            },
+            @{@"key": @"dashboard_glass_intensity",
+              @"title": @"Dashboard Glass Intensity",
+              @"hasDetail": @YES,
+              @"icon": @"sparkle",
+              @"type": self.typeSlider,
+              @"min": @(20),
+              @"max": @(100),
+              @"requestReload": @YES
             },
             @{@"key": @"reset_warnings",
               @"icon": @"exclamationmark.triangle",
@@ -423,9 +478,142 @@
     }
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self refreshDashboardThemePreview];
+}
+
 - (void)actionClose {
     [self dismissViewControllerAnimated:YES completion:nil];
 }
+
+- (void)refreshDashboardThemePreview {
+    AmethystApplyVisionAppearance();
+    AmethystApplyVisionContentTable(self.tableView);
+    [self.tableView reloadData];
+
+    UISplitViewController *splitVC = self.splitViewController;
+    if (!splitVC) {
+        return;
+    }
+
+    for (UIViewController *vc in splitVC.viewControllers) {
+        if ([vc isKindOfClass:UINavigationController.class]) {
+            UINavigationController *nav = (UINavigationController *)vc;
+            UIViewController *top = nav.topViewController;
+            if ([top isKindOfClass:UITableViewController.class]) {
+                UITableView *table = ((UITableViewController *)top).tableView;
+                if (table) {
+                    if ([top isKindOfClass:LauncherMenuViewController.class]) {
+                        AmethystApplyVisionSidebar(table);
+                    } else {
+                        AmethystApplyVisionContentTable(table);
+                    }
+                    [table reloadData];
+                }
+            } else if (top.view) {
+                AmethystApplyVisionBackground(top.view);
+            }
+        } else if (vc.view) {
+            AmethystApplyVisionBackground(vc.view);
+        }
+    }
+}
+
+- (void)actionChooseDashboardBackgroundFromPhotos {
+#if __has_include(<PhotosUI/PhotosUI.h>)
+    if (@available(iOS 14.0, *)) {
+        PHPickerConfiguration *configuration = [[PHPickerConfiguration alloc] init];
+        configuration.selectionLimit = 1;
+        configuration.filter = [PHPickerFilter imagesFilter];
+
+        PHPickerViewController *picker = [[PHPickerViewController alloc] initWithConfiguration:configuration];
+        picker.delegate = self;
+        picker.modalPresentationStyle = UIModalPresentationFormSheet;
+        [self presentViewController:picker animated:YES completion:nil];
+        return;
+    }
+#endif
+    showDialog(localize(@"Error", nil), @"This iOS version does not support photo picker.");
+}
+
+- (void)actionChooseDashboardBackgroundFromFiles {
+    UIDocumentPickerViewController *documentPicker = nil;
+#if __has_include(<UniformTypeIdentifiers/UniformTypeIdentifiers.h>)
+    if (@available(iOS 14.0, *)) {
+        documentPicker = [[UIDocumentPickerViewController alloc] initForOpeningContentTypes:@[UTTypeImage] asCopy:YES];
+    } else {
+        documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[@"public.image"] inMode:UIDocumentPickerModeImport];
+    }
+#else
+    documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[@"public.image"] inMode:UIDocumentPickerModeImport];
+#endif
+    documentPicker.delegate = self;
+    documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
+    [self presentViewController:documentPicker animated:YES completion:nil];
+}
+
+- (void)actionResetDashboardBackground {
+    NSError *error = AmethystResetDashboardWallpaper();
+    if (error) {
+        showDialog(localize(@"Error", nil), error.localizedDescription);
+        return;
+    }
+    [self refreshDashboardThemePreview];
+}
+
+- (void)handleDashboardBackgroundFileURL:(NSURL *)url {
+    NSError *error = AmethystSaveDashboardWallpaperFromFileURL(url);
+    if (error) {
+        showDialog(localize(@"Error", nil), error.localizedDescription);
+        return;
+    }
+    [self refreshDashboardThemePreview];
+}
+
+- (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentAtURL:(NSURL *)url {
+    [self handleDashboardBackgroundFileURL:url];
+}
+
+- (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls {
+    if (urls.count == 0) {
+        return;
+    }
+    [self handleDashboardBackgroundFileURL:urls.firstObject];
+}
+
+#if __has_include(<PhotosUI/PhotosUI.h>)
+- (void)picker:(PHPickerViewController *)picker didFinishPicking:(NSArray<PHPickerResult *> *)results {
+    [picker dismissViewControllerAnimated:YES completion:nil];
+    if (results.count == 0) {
+        return;
+    }
+
+    NSItemProvider *provider = results.firstObject.itemProvider;
+    if (![provider canLoadObjectOfClass:UIImage.class]) {
+        showDialog(localize(@"Error", nil), @"Unable to decode selected photo.");
+        return;
+    }
+
+    __weak __typeof(self) weakSelf = self;
+    [provider loadObjectOfClass:UIImage.class completionHandler:^(id<NSItemProviderReading> _Nullable object, NSError * _Nullable error) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (error) {
+                showDialog(localize(@"Error", nil), error.localizedDescription);
+                return;
+            }
+
+            UIImage *image = (UIImage *)object;
+            NSError *saveError = AmethystSaveDashboardWallpaperFromImage(image);
+            if (saveError) {
+                showDialog(localize(@"Error", nil), saveError.localizedDescription);
+                return;
+            }
+            [weakSelf refreshDashboardThemePreview];
+        });
+    }];
+}
+#endif
 
 #pragma mark UITableView
 

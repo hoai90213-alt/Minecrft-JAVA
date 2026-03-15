@@ -45,6 +45,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    AmethystApplyVisionAppearance();
     AmethystApplyVisionBackground(self.view);
 
     if ([self respondsToSelector:@selector(setNeedsUpdateOfScreenEdgesDeferringSystemGestures)]) {
@@ -156,6 +157,14 @@ static void *ProgressObserverContext = &ProgressObserverContext;
 - (void)dealloc {
     [NSNotificationCenter.defaultCenter removeObserver:self name:@"InstallModpack" object:nil];
     [self removeTaskProgressObserver];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    AmethystApplyVisionAppearance();
+    AmethystApplyVisionBackground(self.view);
+    AmethystApplyVisionInput(self.versionTextField);
+    AmethystApplyVisionPrimaryButton(self.buttonInstall);
 }
 
 - (void)observeTaskProgress {

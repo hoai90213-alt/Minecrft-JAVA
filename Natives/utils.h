@@ -84,10 +84,15 @@ NSMutableDictionary* parseJSONFromFile(NSString *path);
 NSError* saveJSONToFile(NSDictionary *dict, NSString *path);
 void AmethystApplyVisionAppearance(void);
 void AmethystApplyVisionBackground(UIView *view);
+void AmethystApplyVisionSidebar(UITableView *tableView);
+void AmethystApplyVisionContentTable(UITableView *tableView);
 void AmethystApplyVisionSurface(UIView *view, CGFloat cornerRadius);
 void AmethystApplyVisionCell(UITableViewCell *cell);
 void AmethystApplyVisionInput(UITextField *textField);
 void AmethystApplyVisionPrimaryButton(UIButton *button);
+NSError* AmethystSaveDashboardWallpaperFromImage(UIImage *image);
+NSError* AmethystSaveDashboardWallpaperFromFileURL(NSURL *fileURL);
+NSError* AmethystResetDashboardWallpaper(void);
 void customNSLog(const char *file, int lineNumber, const char *functionName, NSString *format, ...);
 
 static inline CGFloat clamp(CGFloat x, CGFloat lower, CGFloat upper) {

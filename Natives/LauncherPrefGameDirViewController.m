@@ -15,6 +15,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    AmethystApplyVisionAppearance();
     [self setTitle:localize(@"preference.title.game_directory", nil)];
 
     self.array = [[NSMutableArray alloc] init];
@@ -23,6 +24,7 @@
     self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleInsetGrouped];
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
     self.tableView.sectionFooterHeight = 50;
+    AmethystApplyVisionContentTable(self.tableView);
 
     NSString *path = [NSString stringWithFormat:@"%s/instances", getenv("POJAV_HOME")];
 
@@ -35,6 +37,12 @@
             [self.array addObject:file];
         }
     }
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    AmethystApplyVisionAppearance();
+    AmethystApplyVisionContentTable(self.tableView);
 }
 
 - (void)changeSelectionTo:(NSString *)name {
@@ -75,6 +83,7 @@
     view = cell.contentView.subviews.firstObject;
     view.placeholder = self.array[indexPath.row];
     view.text = self.array[indexPath.row];
+    AmethystApplyVisionInput(view);
     cell.textLabel.hidden = YES;
     cell.textLabel.text = view.text;
 
@@ -93,6 +102,7 @@
     } else {
         cell.accessoryType = UITableViewCellAccessoryNone;
     }
+    AmethystApplyVisionCell(cell);
     
     return cell;
 }
@@ -107,6 +117,7 @@ viewForFooterInSection:(NSInteger)section
     view.delegate = self;
     view.placeholder = localize(@"preference.multidir.add_directory", nil);
     view.returnKeyType = UIReturnKeyDone;
+    AmethystApplyVisionInput(view);
     return view;
 }
 

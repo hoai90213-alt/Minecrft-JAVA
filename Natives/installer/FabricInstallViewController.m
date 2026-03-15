@@ -24,6 +24,7 @@
 @implementation FabricInstallViewController
 
 - (void)viewDidLoad {
+    AmethystApplyVisionAppearance();
     // Setup navigation bar
     self.title = localize(@"profile.title.install_fabric_quilt", nil);
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(actionDone:)];
@@ -106,6 +107,7 @@
 
     // Ensure views are loaded here
     [super viewDidLoad];
+    AmethystApplyVisionContentTable(self.tableView);
 
     // Init endpoint info
     self.endpoints = FabricUtils.endpoints;

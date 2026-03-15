@@ -19,6 +19,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    AmethystApplyVisionAppearance();
 
     if (self.accountList == nil) {
         self.accountList = [NSMutableArray array];
@@ -40,8 +41,13 @@
     }
 
     [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
-    self.tableView.backgroundColor = UIColor.clearColor;
-    AmethystApplyVisionBackground(self.tableView);
+    AmethystApplyVisionContentTable(self.tableView);
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    AmethystApplyVisionAppearance();
+    AmethystApplyVisionContentTable(self.tableView);
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section

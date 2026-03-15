@@ -54,12 +54,14 @@ static WFWorkflowProgressView* currentProgressView;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    AmethystApplyVisionAppearance();
     [self setTitle:localize(@"preference.title.manage_runtime", nil)];
 
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"plus"] style:UIBarButtonItemStylePlain target:self action:@selector(actionImportRuntime)];
 
     self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleInsetGrouped];
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
+    AmethystApplyVisionContentTable(self.tableView);
 
     self.javaRuntimes = @{
         @(DEFAULT_JRE): @[@"preference.manage_runtime.default.1165", @"preference.manage_runtime.default.117", @"launcher.menu.execute_jar"]
@@ -76,6 +78,12 @@ static WFWorkflowProgressView* currentProgressView;
 
     // Load WFWorkflowProgressView
     dlopen("/System/Library/PrivateFrameworks/WorkflowUIServices.framework/WorkflowUIServices", RTLD_GLOBAL);
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    AmethystApplyVisionAppearance();
+    AmethystApplyVisionContentTable(self.tableView);
 }
 
 + (void)actionCancelImportRuntime {
@@ -190,6 +198,7 @@ static WFWorkflowProgressView* currentProgressView;
     cell.textLabel.text = localize(self.javaRuntimes[@DEFAULT_JRE][indexPath.row], nil);
     cell.detailTextLabel.text = [NSString stringWithFormat:@"Java %@",
         ((NSDictionary *)self.selectedRuntimes[@"0"])[self.selectedRTTags[indexPath.row]]];
+    AmethystApplyVisionCell(cell);
     return cell;
 }
 
@@ -246,6 +255,7 @@ static WFWorkflowProgressView* currentProgressView;
         });
     });
 
+    AmethystApplyVisionCell(cell);
     return cell;
 }
 

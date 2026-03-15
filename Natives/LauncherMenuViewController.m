@@ -51,6 +51,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    AmethystApplyVisionAppearance();
     
     self.isInitialVc = YES;
     
@@ -113,9 +114,7 @@
         }]];
     }
     
-    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.tableView.backgroundColor = UIColor.clearColor;
-    AmethystApplyVisionBackground(self.tableView);
+    AmethystApplyVisionSidebar(self.tableView);
     
     self.navigationController.toolbarHidden = NO;
     UIActivityIndicatorViewStyle indicatorStyle = UIActivityIndicatorViewStyleMedium;
@@ -163,7 +162,8 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    AmethystApplyVisionBackground(self.tableView);
+    AmethystApplyVisionAppearance();
+    AmethystApplyVisionSidebar(self.tableView);
     AmethystApplyVisionSurface(self.accountButton, 14.0);
     [self restoreHighlightedSelection];
 }

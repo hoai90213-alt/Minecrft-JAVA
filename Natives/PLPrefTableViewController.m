@@ -28,11 +28,11 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    AmethystApplyVisionAppearance();
 
     self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleInsetGrouped];
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
-    self.tableView.backgroundColor = UIColor.clearColor;
-    AmethystApplyVisionBackground(self.tableView);
+    AmethystApplyVisionContentTable(self.tableView);
     if (self.prefSections) {
         self.prefSectionsVisibility = [[NSMutableArray<NSNumber *> alloc] initWithCapacity:self.prefSections.count];
         for (int i = 0; i < self.prefSections.count; i++) {
@@ -53,7 +53,8 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    AmethystApplyVisionBackground(self.tableView);
+    AmethystApplyVisionAppearance();
+    AmethystApplyVisionContentTable(self.tableView);
 
     // Put navigation buttons back in place if we're first of the navigation controller
     if (self.hasDetail && self.navigationController) {
@@ -262,11 +263,21 @@
 
 - (void)sliderMoved:(DBNumberedSlider *)sender {
     [self checkWarn:sender];
+    NSDictionary *item = objc_getAssociatedObject(sender, @"item");
     NSString *section = objc_getAssociatedObject(sender, @"section");
     NSString *key = objc_getAssociatedObject(sender, @"key");
 
     sender.value = (int)sender.value;
     self.setPreference(section, key, @(sender.value));
+
+    if ([item[@"requestReload"] boolValue]) {
+        [self.tableView reloadData];
+    }
+
+    if ([section isEqualToString:@"general"] && [key hasPrefix:@"dashboard_"]) {
+        AmethystApplyVisionAppearance();
+        AmethystApplyVisionContentTable(self.tableView);
+    }
 }
 
 - (void)switchChanged:(UISwitch *)sender {
@@ -290,6 +301,11 @@
     if ([item[@"requestReload"] boolValue]) {
         // TODO: only reload needed rows
         [self.tableView reloadData];
+    }
+
+    if ([section isEqualToString:@"general"] && [key hasPrefix:@"dashboard_"]) {
+        AmethystApplyVisionAppearance();
+        AmethystApplyVisionContentTable(self.tableView);
     }
 }
 
