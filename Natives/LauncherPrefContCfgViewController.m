@@ -35,7 +35,6 @@ typedef void(^CreateView)(UITableViewCell *, NSString *, NSDictionary *);
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    AmethystApplyVisionAppearance();
     [self setTitle:localize(@"preference.title.default_gamepad_ctrl", nil)];
     
     self.keycodePlist = [NSDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"glfw_keycodes" ofType:@"plist"]];
@@ -47,7 +46,6 @@ typedef void(^CreateView)(UITableViewCell *, NSString *, NSDictionary *);
     self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleInsetGrouped];
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
     self.tableView.sectionFooterHeight = 50;
-    AmethystApplyVisionContentTable(self.tableView);
     
     [self loadGamepadConfigurationFile];
     self.prefControllerTypes = @[@{@"name": @"xbox"}, @{@"name": @"playstation"}];
@@ -75,8 +73,6 @@ typedef void(^CreateView)(UITableViewCell *, NSString *, NSDictionary *);
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    AmethystApplyVisionAppearance();
-    AmethystApplyVisionContentTable(self.tableView);
 }
 
 #pragma mark External UITableView functions
@@ -138,7 +134,6 @@ typedef void(^CreateView)(UITableViewCell *, NSString *, NSDictionary *);
             view.inputView = self.editPickMapping;
             cell.accessoryView = view;
         }
-        AmethystApplyVisionInput(view);
         view.text = self.keyCodeMap[[self.keyValueMap indexOfObject:keycode]];
         objc_setAssociatedObject(view, @"gamepad_button", item[@"name"], OBJC_ASSOCIATION_ASSIGN);
         objc_setAssociatedObject(view, @"item", item, OBJC_ASSOCIATION_ASSIGN);
@@ -150,7 +145,6 @@ typedef void(^CreateView)(UITableViewCell *, NSString *, NSDictionary *);
             cell.accessoryType = UITableViewCellAccessoryNone;
         }
     }
-    AmethystApplyVisionCell(cell);
     return cell;
 }
 

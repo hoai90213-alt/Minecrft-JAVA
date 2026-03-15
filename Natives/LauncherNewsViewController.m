@@ -24,7 +24,6 @@ UIEdgeInsets insets;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    AmethystApplyVisionAppearance();
     AmethystApplyVisionBackground(self.view);
     
     CGSize size = CGSizeMake(self.view.frame.size.width, self.view.frame.size.height);

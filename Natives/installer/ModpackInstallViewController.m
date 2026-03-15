@@ -26,8 +26,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    AmethystApplyVisionAppearance();
-    AmethystApplyVisionContentTable(self.tableView);
 
     //NSString *curseforgeAPIKey = CONFIG_CURSEFORGE_API_KEY;
     self.searchController = [[UISearchController alloc] initWithSearchResultsController:nil];
@@ -41,12 +39,6 @@
         // mcVersion
     }.mutableCopy;
     [self updateSearchResults];
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    AmethystApplyVisionAppearance();
-    AmethystApplyVisionContentTable(self.tableView);
 }
 
 - (void)loadSearchResultsWithPrevList:(BOOL)prevList {
@@ -143,8 +135,6 @@
     if (!self.modrinth.reachedLastPage && indexPath.row == self.list.count-1) {
         [self loadSearchResultsWithPrevList:YES];
     }
-
-    AmethystApplyVisionCell(cell);
 
     return cell;
 }

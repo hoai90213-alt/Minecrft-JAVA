@@ -74,11 +74,7 @@
         NSDictionary *general = @{
             @"game_directory": @"default",
             @"hidden_sidebar": @(realUIIdiom == UIUserInterfaceIdiomPhone),
-            @"appicon": @"AppIcon-Light",
-            @"dashboard_background_mode": @"default",
-            @"dashboard_background_path": @"",
-            @"dashboard_blur_strength": @(74),
-            @"dashboard_glass_intensity": @(76)
+            @"appicon": @"AppIcon-Light"
         };
         [defaults[@"general"] addEntriesFromDictionary:general];
 

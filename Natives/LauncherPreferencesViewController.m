@@ -14,7 +14,7 @@
 #import "ios_uikit_bridge.h"
 #import "utils.h"
 
-@interface LauncherPreferencesViewController()<UIDocumentPickerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
+@interface LauncherPreferencesViewController()
 @property(nonatomic) NSArray<NSString*> *rendererKeys, *rendererList;
 @end
 
@@ -106,51 +106,6 @@
               @"icon": @"sidebar.leading",
               @"type": self.typeSwitch,
               @"enableCondition": whenNotInGame
-            },
-            @{@"key": @"dashboard_background_photo",
-              @"title": @"Dashboard Background (Photos)",
-              @"icon": @"photo.on.rectangle",
-              @"type": self.typeButton,
-              @"enableCondition": whenNotInGame,
-              @"action": ^void(){
-                  [self actionChooseDashboardBackgroundFromPhotos];
-              }
-            },
-            @{@"key": @"dashboard_background_file",
-              @"title": @"Dashboard Background (Files)",
-              @"icon": @"folder.badge.plus",
-              @"type": self.typeButton,
-              @"enableCondition": whenNotInGame,
-              @"action": ^void(){
-                  [self actionChooseDashboardBackgroundFromFiles];
-              }
-            },
-            @{@"key": @"dashboard_background_reset",
-              @"title": @"Reset Dashboard Background",
-              @"icon": @"arrow.counterclockwise",
-              @"type": self.typeButton,
-              @"enableCondition": whenNotInGame,
-              @"action": ^void(){
-                  [self actionResetDashboardBackground];
-              }
-            },
-            @{@"key": @"dashboard_blur_strength",
-              @"title": @"Dashboard Blur Strength",
-              @"hasDetail": @YES,
-              @"icon": @"drop.halffull",
-              @"type": self.typeSlider,
-              @"min": @(25),
-              @"max": @(100),
-              @"requestReload": @YES
-            },
-            @{@"key": @"dashboard_glass_intensity",
-              @"title": @"Dashboard Glass Intensity",
-              @"hasDetail": @YES,
-              @"icon": @"sparkle",
-              @"type": self.typeSlider,
-              @"min": @(20),
-              @"max": @(100),
-              @"requestReload": @YES
             },
             @{@"key": @"reset_warnings",
               @"icon": @"exclamationmark.triangle",
@@ -468,112 +423,8 @@
     }
 }
 
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    [self refreshDashboardThemePreview];
-}
-
 - (void)actionClose {
     [self dismissViewControllerAnimated:YES completion:nil];
-}
-
-- (void)refreshDashboardThemePreview {
-    AmethystApplyVisionAppearance();
-    AmethystApplyVisionContentTable(self.tableView);
-    [self.tableView reloadData];
-
-    UISplitViewController *splitVC = self.splitViewController;
-    if (!splitVC) {
-        return;
-    }
-
-    for (UIViewController *vc in splitVC.viewControllers) {
-        if ([vc isKindOfClass:UINavigationController.class]) {
-            UINavigationController *nav = (UINavigationController *)vc;
-            UIViewController *top = nav.topViewController;
-            if ([top isKindOfClass:UITableViewController.class]) {
-                UITableView *table = ((UITableViewController *)top).tableView;
-                if (table) {
-                    if ([top isKindOfClass:LauncherMenuViewController.class]) {
-                        AmethystApplyVisionSidebar(table);
-                    } else {
-                        AmethystApplyVisionContentTable(table);
-                    }
-                    [table reloadData];
-                }
-            } else if (top.view) {
-                AmethystApplyVisionBackground(top.view);
-            }
-        } else if (vc.view) {
-            AmethystApplyVisionBackground(vc.view);
-        }
-    }
-}
-
-- (void)actionChooseDashboardBackgroundFromPhotos {
-    if (![UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
-        showDialog(localize(@"Error", nil), @"Photo library is unavailable on this device.");
-        return;
-    }
-
-    UIImagePickerController *picker = [UIImagePickerController new];
-    picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-    picker.mediaTypes = @[@"public.image"];
-    picker.delegate = self;
-    picker.modalPresentationStyle = UIModalPresentationFormSheet;
-    [self presentViewController:picker animated:YES completion:nil];
-}
-
-- (void)actionChooseDashboardBackgroundFromFiles {
-    UIDocumentPickerViewController *documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[@"public.image"] inMode:UIDocumentPickerModeImport];
-    documentPicker.delegate = self;
-    documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
-    [self presentViewController:documentPicker animated:YES completion:nil];
-}
-
-- (void)actionResetDashboardBackground {
-    NSError *error = AmethystResetDashboardWallpaper();
-    if (error) {
-        showDialog(localize(@"Error", nil), error.localizedDescription);
-        return;
-    }
-    [self refreshDashboardThemePreview];
-}
-
-- (void)handleDashboardBackgroundFileURL:(NSURL *)url {
-    NSError *error = AmethystSaveDashboardWallpaperFromFileURL(url);
-    if (error) {
-        showDialog(localize(@"Error", nil), error.localizedDescription);
-        return;
-    }
-    [self refreshDashboardThemePreview];
-}
-
-- (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentAtURL:(NSURL *)url {
-    [self handleDashboardBackgroundFileURL:url];
-}
-
-- (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls {
-    if (urls.count == 0) {
-        return;
-    }
-    [self handleDashboardBackgroundFileURL:urls.firstObject];
-}
-
-- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
-    [picker dismissViewControllerAnimated:YES completion:nil];
-}
-
-- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<UIImagePickerControllerInfoKey,id> *)info {
-    UIImage *image = info[UIImagePickerControllerOriginalImage];
-    [picker dismissViewControllerAnimated:YES completion:^{
-        NSError *saveError = AmethystSaveDashboardWallpaperFromImage(image);
-        if (saveError) {
-            showDialog(localize(@"Error", nil), saveError.localizedDescription);
-            return;
-        }
-        [self refreshDashboardThemePreview];
-    }];
 }
 
 #pragma mark UITableView

@@ -2,7 +2,6 @@
 #import <objc/runtime.h>
 #import "DownloadProgressViewController.h"
 #import "WFWorkflowProgressView.h"
-#import "utils.h"
 
 static void *CellProgressObserverContext = &CellProgressObserverContext;
 static void *TotalProgressObserverContext = &TotalProgressObserverContext;
@@ -21,8 +20,6 @@ static void *TotalProgressObserverContext = &TotalProgressObserverContext;
 
 - (void)loadView {
     [super loadView];
-    AmethystApplyVisionAppearance();
-    AmethystApplyVisionContentTable(self.tableView);
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemClose target:self action:@selector(actionClose)];
     self.tableView.allowsSelection = NO;
 
@@ -31,7 +28,6 @@ static void *TotalProgressObserverContext = &TotalProgressObserverContext;
 }
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    AmethystApplyVisionContentTable(self.tableView);
     
 [self.task.textProgress addObserver:self
         forKeyPath:@"fractionCompleted"
@@ -119,7 +115,6 @@ static void *TotalProgressObserverContext = &TotalProgressObserverContext;
 
     cell.textLabel.text = self.task.fileList[indexPath.row];
     cell.detailTextLabel.text = progress.localizedAdditionalDescription;
-    AmethystApplyVisionCell(cell);
     return cell;
 }
 

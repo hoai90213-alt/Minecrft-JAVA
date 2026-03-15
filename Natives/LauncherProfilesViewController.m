@@ -43,7 +43,6 @@ typedef NS_ENUM(NSUInteger, LauncherProfilesTableSection) {
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    AmethystApplyVisionAppearance();
 
     UIMenu *createMenu = [UIMenu menuWithTitle:localize(@"profile.title.create", nil) image:nil identifier:nil
     options:UIMenuOptionsDisplayInline
@@ -80,13 +79,13 @@ typedef NS_ENUM(NSUInteger, LauncherProfilesTableSection) {
 
     self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleInsetGrouped];
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
-    AmethystApplyVisionContentTable(self.tableView);
+    self.tableView.backgroundColor = UIColor.clearColor;
+    AmethystApplyVisionBackground(self.tableView);
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    AmethystApplyVisionAppearance();
-    AmethystApplyVisionContentTable(self.tableView);
+    AmethystApplyVisionBackground(self.tableView);
 
     // Put navigation buttons back in place
     self.navigationItem.rightBarButtonItems = @[[sidebarViewController drawAccountButton], self.createButtonItem];

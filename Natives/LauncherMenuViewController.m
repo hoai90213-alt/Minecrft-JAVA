@@ -51,7 +51,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    AmethystApplyVisionAppearance();
     
     self.isInitialVc = YES;
     
@@ -114,7 +113,9 @@
         }]];
     }
     
-    AmethystApplyVisionSidebar(self.tableView);
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    self.tableView.backgroundColor = UIColor.clearColor;
+    AmethystApplyVisionBackground(self.tableView);
     
     self.navigationController.toolbarHidden = NO;
     UIActivityIndicatorViewStyle indicatorStyle = UIActivityIndicatorViewStyleMedium;
@@ -162,8 +163,7 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    AmethystApplyVisionAppearance();
-    AmethystApplyVisionSidebar(self.tableView);
+    AmethystApplyVisionBackground(self.tableView);
     AmethystApplyVisionSurface(self.accountButton, 14.0);
     [self restoreHighlightedSelection];
 }
@@ -175,12 +175,9 @@
         self.accountButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
 
         self.accountButton.titleEdgeInsets = UIEdgeInsetsMake(0, 4, 0, -4);
-        self.accountButton.contentEdgeInsets = UIEdgeInsetsMake(8, 12, 8, 12);
+        self.accountButton.contentEdgeInsets = UIEdgeInsetsMake(6, 10, 6, 10);
         self.accountButton.imageView.contentMode = UIViewContentModeScaleAspectFit;
         self.accountButton.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
-        self.accountButton.titleLabel.numberOfLines = 2;
-        self.accountButton.tintColor = [UIColor colorWithWhite:1.0 alpha:0.94];
-        [self.accountButton setTitleColor:[UIColor colorWithWhite:1.0 alpha:0.96] forState:UIControlStateNormal];
         self.accountBtnItem = [[UIBarButtonItem alloc] initWithCustomView:self.accountButton];
     }
 
@@ -228,7 +225,7 @@
             performSelector:@selector(imageName)]];
         cell.imageView.image = [cell.imageView.image _imageWithSize:CGSizeMake(40, 40)];
     }
-    AmethystApplyVisionSidebarCell(cell);
+    AmethystApplyVisionCell(cell);
     return cell;
 }
 
@@ -298,11 +295,7 @@
 
     // Remove the prefix "Demo." if there is
     BOOL isDemo = [selected[@"username"] hasPrefix:@"Demo."];
-    NSDictionary *titleAttrs = @{
-        NSForegroundColorAttributeName: [UIColor colorWithWhite:1.0 alpha:0.96],
-        NSFontAttributeName: [UIFont systemFontOfSize:15 weight:UIFontWeightSemibold]
-    };
-    NSMutableAttributedString *title = [[NSMutableAttributedString alloc] initWithString:[selected[@"username"] substringFromIndex:(isDemo?5:0)] attributes:titleAttrs];
+    NSMutableAttributedString *title = [[NSMutableAttributedString alloc] initWithString:[selected[@"username"] substringFromIndex:(isDemo?5:0)]];
 
     // Check if we're switching between demo and full mode
     BOOL shouldUpdateProfiles = (getenv("DEMO_LOCK")!=NULL) != isDemo;
@@ -323,10 +316,7 @@
         subtitle = selected[@"xboxGamertag"];
     }
 
-    subtitle = [[NSAttributedString alloc] initWithString:subtitle attributes:@{
-        NSForegroundColorAttributeName: [UIColor colorWithWhite:1.0 alpha:0.72],
-        NSFontAttributeName: [UIFont systemFontOfSize:12 weight:UIFontWeightMedium]
-    }];
+    subtitle = [[NSAttributedString alloc] initWithString:subtitle attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:12]}];
     [title appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n" attributes:nil]];
     [title appendAttributedString:subtitle];
     

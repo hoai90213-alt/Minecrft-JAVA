@@ -1,5 +1,4 @@
 #import "FileListViewController.h"
-#import "utils.h"
 
 @interface FileListViewController () {
 }
@@ -12,7 +11,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    AmethystApplyVisionAppearance();
 
     if (self.fileList == nil) {
         self.fileList = [NSMutableArray array];
@@ -33,13 +31,6 @@
     }
 
     [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
-    AmethystApplyVisionContentTable(self.tableView);
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    AmethystApplyVisionAppearance();
-    AmethystApplyVisionContentTable(self.tableView);
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -56,7 +47,6 @@
     }
 
     cell.textLabel.text = [self.fileList objectAtIndex:indexPath.row];
-    AmethystApplyVisionCell(cell);
     return cell;
 }
 
