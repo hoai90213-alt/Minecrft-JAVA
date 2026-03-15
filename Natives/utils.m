@@ -285,7 +285,6 @@ void AmethystApplyCardStyle(UIView *view) {
     gloss.colors = @[(id)glossTop.CGColor, (id)glossBottom.CGColor];
     gloss.locations = @[@0.0, @0.58];
     gloss.needsDisplayOnBoundsChange = YES;
-    gloss.autoresizingMask = kCALayerWidthSizable | kCALayerHeightSizable;
     [view.layer insertSublayer:gloss atIndex:0];
 
     AmethystApplyParallaxEffect(view, 6.5);
