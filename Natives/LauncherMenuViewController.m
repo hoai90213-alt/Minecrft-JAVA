@@ -48,16 +48,14 @@
 @implementation LauncherMenuViewController
 
 #define contentNavigationController ((LauncherNavigationController *)self.splitViewController.viewControllers[1])
+static NSInteger const kMenuIconTag = 0xC0DE10;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayModeNever;
     
     self.isInitialVc = YES;
-    
-    UIImageView *titleView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"AppLogo"]];
-    [titleView setContentMode:UIViewContentModeScaleAspectFit];
-    self.navigationItem.titleView = titleView;
-    [titleView sizeToFit];
+    UIView *popoverSourceView = self.view;
     
     self.options = @[
         [LauncherMenuCustomItem vcClass:LauncherNewsViewController.class],
@@ -97,8 +95,8 @@
              performSelector:@selector(initWithSharingItems:)
              withObject:@[[NSURL URLWithString:latestlogPath]]];
         }
-        activityVC.popoverPresentationController.sourceView = titleView;
-        activityVC.popoverPresentationController.sourceRect = titleView.bounds;
+        activityVC.popoverPresentationController.sourceView = popoverSourceView;
+        activityVC.popoverPresentationController.sourceRect = popoverSourceView.bounds;
         [self presentViewController:activityVC animated:YES completion:nil];
     }]];
     
@@ -115,7 +113,18 @@
     
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.backgroundColor = UIColor.clearColor;
-    AmethystApplyVisionBackground(self.tableView);
+    self.tableView.backgroundView = nil;
+    self.tableView.rowHeight = 50.0;
+    self.tableView.estimatedRowHeight = 50.0;
+    self.tableView.alwaysBounceVertical = NO;
+    self.tableView.bounces = NO;
+    self.tableView.tableHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 1, 1)];
+    self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 1, 1)];
+    self.tableView.contentInset = UIEdgeInsetsZero;
+    self.tableView.scrollIndicatorInsets = UIEdgeInsetsZero;
+    if (@available(iOS 15.0, *)) {
+        self.tableView.sectionHeaderTopPadding = 0;
+    }
     
     self.navigationController.toolbarHidden = NO;
     UIActivityIndicatorViewStyle indicatorStyle = UIActivityIndicatorViewStyleMedium;
@@ -163,9 +172,25 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    AmethystApplyVisionBackground(self.tableView);
+    self.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayModeNever;
     AmethystApplyVisionSurface(self.accountButton, 14.0);
     [self restoreHighlightedSelection];
+}
+
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+    [self.tableView layoutIfNeeded];
+
+    CGFloat toolbarHeight = self.navigationController.toolbarHidden ? 0.0 : self.navigationController.toolbar.frame.size.height;
+    CGFloat topInset = self.view.safeAreaInsets.top + 4.0;
+    CGFloat bottomInset = self.view.safeAreaInsets.bottom + toolbarHeight + 8.0;
+    CGFloat maxHeight = MAX(0.0, self.view.bounds.size.height - topInset - bottomInset);
+    CGFloat desiredHeight = MIN(maxHeight, self.tableView.contentSize.height + 2.0);
+
+    CGRect frame = self.tableView.frame;
+    frame.origin.y = topInset;
+    frame.size.height = desiredHeight;
+    self.tableView.frame = frame;
 }
 
 - (UIBarButtonItem *)drawAccountButton {
@@ -200,31 +225,44 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    LauncherMenuCustomItem *item = self.options[indexPath.row];
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
     if (cell == nil) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];
     }
 
-    cell.textLabel.text = [self.options[indexPath.row] title];
-    
-    UIImage *origImage = [UIImage systemImageNamed:[self.options[indexPath.row]
-        performSelector:@selector(imageName)]];
-    if (origImage) {
-        UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:CGSizeMake(40, 40)];
-        UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext*_Nonnull myContext) {
-            CGFloat scaleFactor = 40/origImage.size.height;
-            [origImage drawInRect:CGRectMake(20 - origImage.size.width*scaleFactor/2, 0, origImage.size.width*scaleFactor, 40)];
-        }];
-        cell.imageView.image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    cell.textLabel.text = nil;
+    cell.imageView.image = nil;
+    cell.accessibilityLabel = item.title;
+
+    UIImage *icon = [UIImage systemImageNamed:item.imageName];
+    if (icon) {
+        UIImageSymbolConfiguration *symbolConfig = [UIImageSymbolConfiguration configurationWithPointSize:23 weight:UIImageSymbolWeightMedium];
+        icon = [[icon imageByApplyingSymbolConfiguration:symbolConfig] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    } else {
+        icon = [UIImage imageNamed:item.imageName];
+        if (icon) {
+            icon = [icon _imageWithSize:CGSizeMake(26, 26)];
+        }
     }
-    
-    if (cell.imageView.image == nil) {
-        cell.imageView.layer.magnificationFilter = kCAFilterNearest;
-        cell.imageView.layer.minificationFilter = kCAFilterNearest;
-        cell.imageView.image = [UIImage imageNamed:[self.options[indexPath.row]
-            performSelector:@selector(imageName)]];
-        cell.imageView.image = [cell.imageView.image _imageWithSize:CGSizeMake(40, 40)];
+
+    UIImageView *iconView = [cell.contentView viewWithTag:kMenuIconTag];
+    if (![iconView isKindOfClass:UIImageView.class]) {
+        [iconView removeFromSuperview];
+        iconView = [[UIImageView alloc] initWithFrame:CGRectZero];
+        iconView.tag = kMenuIconTag;
+        iconView.translatesAutoresizingMaskIntoConstraints = NO;
+        iconView.contentMode = UIViewContentModeScaleAspectFit;
+        [cell.contentView addSubview:iconView];
+        [NSLayoutConstraint activateConstraints:@[
+            [iconView.centerXAnchor constraintEqualToAnchor:cell.contentView.centerXAnchor],
+            [iconView.centerYAnchor constraintEqualToAnchor:cell.contentView.centerYAnchor],
+            [iconView.widthAnchor constraintEqualToConstant:26.0],
+            [iconView.heightAnchor constraintEqualToConstant:26.0],
+        ]];
     }
+    iconView.image = icon;
+    iconView.tintColor = cell.tintColor;
     AmethystApplyVisionCell(cell);
     return cell;
 }
