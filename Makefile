@@ -309,6 +309,14 @@ jre: native
 dep_mg:
 	echo '[Amethyst v$(VERSION)] dep_mg - start'
 	mkdir -p $(WORKINGDIR)/mobileglues
+	# Patch MobileGlues defaults on iOS to improve shader compatibility:
+	# - enable compute extension exposure
+	# - enable timer query extension exposure
+	# - use Auto multidraw path selection
+	# - increase GLSL cache size
+	if [ -f "$(MG_SRC_DIR)/config/settings.cpp" ]; then \
+		perl -0777 -i -pe 's/global_settings\.ignore_error = IgnoreErrorLevel::Partial;\n    global_settings\.ext_compute_shader = false;\n    global_settings\.max_glsl_cache_size = 30 \* 1024 \* 1024;\n    global_settings\.multidraw_mode = multidraw_mode_t::DrawElements;/global_settings.ignore_error = IgnoreErrorLevel::Partial;\n    global_settings.ext_compute_shader = true;\n    global_settings.ext_timer_query = true;\n    global_settings.max_glsl_cache_size = 64 * 1024 * 1024;\n    global_settings.multidraw_mode = multidraw_mode_t::Auto;/s' "$(MG_SRC_DIR)/config/settings.cpp"; \
+	fi
 	cd $(WORKINGDIR)/mobileglues && cmake \
 		-DMACOS="1" \
 		-DCMAKE_CROSSCOMPILING=true \
