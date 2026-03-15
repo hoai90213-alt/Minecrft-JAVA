@@ -48,6 +48,11 @@
     return self;
 }
 
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    AmethystApplyVisionCell(self);
+}
+
 @end
 
 @interface MinecraftVersionHeaderView : UITableViewHeaderFooterView
@@ -63,9 +68,10 @@
     self = [super initWithReuseIdentifier:reuseIdentifier];
     if (self) {
         UIView *containerView = [[UIView alloc] init];
-        containerView.backgroundColor = [UIColor systemGroupedBackgroundColor];
+        containerView.backgroundColor = UIColor.clearColor;
         containerView.translatesAutoresizingMaskIntoConstraints = NO;
         [self.contentView addSubview:containerView];
+        AmethystApplyVisionSurface(containerView, 14.0);
         
         self.titleLabel = [[UILabel alloc] init];
         self.titleLabel.font = [UIFont boldSystemFontOfSize:18];
@@ -153,17 +159,11 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.view.backgroundColor = UIColor.clearColor;
-    AmethystApplyPanelBackground(self.view);
-    
+    AmethystApplyVisionAppearance();
+    AmethystApplyVisionBackground(self.tableView);
+
     if (self.navigationController) {
-        self.navigationController.navigationBar.translucent = NO;
-        UINavigationBarAppearance *appearance = [[UINavigationBarAppearance alloc] init];
-        [appearance configureWithOpaqueBackground];
-        appearance.backgroundColor = [UIColor systemBackgroundColor];
-        self.navigationController.navigationBar.standardAppearance = appearance;
-        self.navigationController.navigationBar.compactAppearance = appearance;
-        self.navigationController.navigationBar.scrollEdgeAppearance = appearance;
+        self.navigationController.navigationBar.translucent = YES;
     }
     
     if (@available(iOS 15.0, *)) {
@@ -171,10 +171,6 @@
     }
     
     self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAutomatic;
-    self.tableView.backgroundColor = UIColor.clearColor;
-    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.tableView.contentInset = UIEdgeInsetsMake(12, 8, 16, 8);
-    self.tableView.clipsToBounds = NO;
     
     self.extendedLayoutIncludesOpaqueBars = NO;
     self.edgesForExtendedLayout = UIRectEdgeNone;
@@ -228,11 +224,6 @@
     self.searchQueue = dispatch_queue_create("com.amethyst.forge.search", DISPATCH_QUEUE_SERIAL);
     
     [self loadMetadataFromVendor:@"Forge"];
-}
-
-- (void)viewDidLayoutSubviews {
-    [super viewDidLayoutSubviews];
-    AmethystApplyPanelBackground(self.view);
 }
 
 - (void)dealloc {
@@ -713,27 +704,17 @@
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return 72.0; 
+    return 56.0; 
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     ForgeVersionCell *cell = [tableView dequeueReusableCellWithIdentifier:@"ForgeVersionCell" forIndexPath:indexPath];
-    cell.backgroundColor = UIColor.clearColor;
-    cell.clipsToBounds = NO;
-    cell.tintColor = AmethystColorAccent();
-    UIView *background = [[UIView alloc] init];
-    AmethystApplyCardStyle(background);
-    cell.backgroundView = background;
-    UIView *selectedBackground = [[UIView alloc] init];
-    selectedBackground.backgroundColor = [AmethystColorAccent() colorWithAlphaComponent:0.22];
-    selectedBackground.layer.cornerRadius = 18;
-    selectedBackground.layer.masksToBounds = YES;
-    cell.selectedBackgroundView = selectedBackground;
     
     if (self.isDataLoading) {
         cell.versionLabel.text = @"Loading...";
         cell.subtitleLabel.text = @"";
         cell.accessoryType = UITableViewCellAccessoryNone;
+        AmethystApplyVisionCell(cell);
         return cell;
     }
     
@@ -756,6 +737,7 @@
         cell.versionLabel.text = @"Loading...";
         cell.subtitleLabel.text = @"";
         cell.accessoryType = UITableViewCellAccessoryNone;
+        AmethystApplyVisionCell(cell);
         return cell;
     }
     
@@ -778,6 +760,7 @@
     cell.subtitleLabel.textColor = typeColor;
     
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    AmethystApplyVisionCell(cell);
     
     return cell;
 }

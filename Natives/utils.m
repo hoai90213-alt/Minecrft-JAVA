@@ -120,9 +120,9 @@ NSString* localize(NSString* key, NSString* comment) {
     return value;
 }
 
-static UIColor* AmethystDynamicColor(CGFloat rLight, CGFloat gLight, CGFloat bLight, CGFloat rDark, CGFloat gDark, CGFloat bDark) {
-    UIColor *light = [UIColor colorWithRed:rLight green:gLight blue:bLight alpha:1.0];
-    UIColor *dark = [UIColor colorWithRed:rDark green:gDark blue:bDark alpha:1.0];
+static UIColor *AmethystVisionDynamicColor(CGFloat lr, CGFloat lg, CGFloat lb, CGFloat dr, CGFloat dg, CGFloat db) {
+    UIColor *light = [UIColor colorWithRed:lr green:lg blue:lb alpha:1.0];
+    UIColor *dark = [UIColor colorWithRed:dr green:dg blue:db alpha:1.0];
     if (@available(iOS 13.0, *)) {
         return [UIColor colorWithDynamicProvider:^UIColor * _Nonnull(UITraitCollection * _Nonnull trait) {
             return trait.userInterfaceStyle == UIUserInterfaceStyleDark ? dark : light;
@@ -131,254 +131,240 @@ static UIColor* AmethystDynamicColor(CGFloat rLight, CGFloat gLight, CGFloat bLi
     return light;
 }
 
-static UIColor* AmethystResolveColor(UIColor *color, UITraitCollection *trait) {
-    if (@available(iOS 13.0, *)) {
-        return [color resolvedColorWithTraitCollection:trait];
-    }
-    return color;
-}
-
-UIColor* AmethystColorAccent(void) {
+static UIColor *AmethystVisionTintColor(void) {
     static UIColor *color;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        color = AmethystDynamicColor(0.11, 0.58, 0.45, 0.24, 0.77, 0.61);
+        color = AmethystVisionDynamicColor(0.14, 0.54, 0.82, 0.35, 0.75, 0.95);
     });
     return color;
 }
 
-UIColor* AmethystColorAccentMuted(void) {
+static UIColor *AmethystVisionGlassColor(void) {
     static UIColor *color;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        color = AmethystDynamicColor(0.79, 0.90, 0.85, 0.21, 0.30, 0.27);
+        color = AmethystVisionDynamicColor(0.94, 0.97, 1.00, 0.16, 0.20, 0.26);
     });
     return color;
 }
 
-UIColor* AmethystColorPanel(void) {
+static UIColor *AmethystVisionBorderColor(void) {
     static UIColor *color;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        color = AmethystDynamicColor(0.97, 0.98, 0.98, 0.11, 0.13, 0.15);
+        color = AmethystVisionDynamicColor(1.00, 1.00, 1.00, 0.78, 0.85, 0.95);
     });
     return color;
 }
 
-void AmethystApplyGlobalAppearance(void) {
+static UIColor *AmethystVisionSelectedColor(void) {
+    static UIColor *color;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        UIColor *accent = AmethystColorAccent();
-        UIColor *panel = AmethystColorPanel();
+        color = AmethystVisionDynamicColor(0.66, 0.84, 1.00, 0.36, 0.55, 0.76);
+    });
+    return color;
+}
 
-        [UIView appearance].tintColor = accent;
+void AmethystApplyVisionAppearance(void) {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        UIColor *tint = AmethystVisionTintColor();
+        [UIView appearance].tintColor = tint;
 
-        UINavigationBarAppearance *navAppearance = [[UINavigationBarAppearance alloc] init];
-        [navAppearance configureWithOpaqueBackground];
-        navAppearance.backgroundColor = [panel colorWithAlphaComponent:0.96];
-        navAppearance.shadowColor = UIColor.clearColor;
-        navAppearance.titleTextAttributes = @{
-            NSForegroundColorAttributeName: UIColor.labelColor,
-            NSFontAttributeName: [UIFont systemFontOfSize:17 weight:UIFontWeightSemibold]
-        };
-        navAppearance.largeTitleTextAttributes = @{
-            NSForegroundColorAttributeName: UIColor.labelColor,
-            NSFontAttributeName: [UIFont systemFontOfSize:33 weight:UIFontWeightBold]
-        };
+        if (@available(iOS 13.0, *)) {
+            UINavigationBarAppearance *navAppearance = [UINavigationBarAppearance new];
+            [navAppearance configureWithTransparentBackground];
+            navAppearance.backgroundEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemUltraThinMaterial];
+            navAppearance.backgroundColor = [AmethystVisionGlassColor() colorWithAlphaComponent:0.42];
+            navAppearance.shadowColor = UIColor.clearColor;
+            navAppearance.titleTextAttributes = @{
+                NSForegroundColorAttributeName: UIColor.labelColor,
+                NSFontAttributeName: [UIFont systemFontOfSize:17 weight:UIFontWeightSemibold]
+            };
+            navAppearance.largeTitleTextAttributes = @{
+                NSForegroundColorAttributeName: UIColor.labelColor,
+                NSFontAttributeName: [UIFont systemFontOfSize:32 weight:UIFontWeightBold]
+            };
 
-        UINavigationBar *navBar = [UINavigationBar appearance];
-        navBar.tintColor = accent;
-        navBar.prefersLargeTitles = YES;
-        navBar.standardAppearance = navAppearance;
-        navBar.compactAppearance = navAppearance;
-        navBar.scrollEdgeAppearance = navAppearance;
+            UINavigationBar *navBar = [UINavigationBar appearance];
+            navBar.tintColor = tint;
+            navBar.prefersLargeTitles = YES;
+            navBar.standardAppearance = navAppearance;
+            navBar.compactAppearance = navAppearance;
+            navBar.scrollEdgeAppearance = navAppearance;
 
-        UIToolbarAppearance *toolbarAppearance = [[UIToolbarAppearance alloc] init];
-        [toolbarAppearance configureWithTransparentBackground];
-        toolbarAppearance.backgroundColor = [panel colorWithAlphaComponent:0.90];
-        toolbarAppearance.shadowColor = UIColor.clearColor;
-        UIToolbar *toolbar = [UIToolbar appearance];
-        toolbar.tintColor = accent;
-        if (@available(iOS 15.0, *)) {
-            toolbar.standardAppearance = toolbarAppearance;
-        } else {
-            toolbar.barTintColor = toolbarAppearance.backgroundColor;
+            UIToolbarAppearance *toolbarAppearance = [UIToolbarAppearance new];
+            [toolbarAppearance configureWithTransparentBackground];
+            toolbarAppearance.backgroundEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemMaterial];
+            toolbarAppearance.backgroundColor = [AmethystVisionGlassColor() colorWithAlphaComponent:0.36];
+            toolbarAppearance.shadowColor = UIColor.clearColor;
+
+            UIToolbar *toolbar = [UIToolbar appearance];
+            toolbar.tintColor = tint;
+            if (@available(iOS 15.0, *)) {
+                toolbar.standardAppearance = toolbarAppearance;
+                toolbar.scrollEdgeAppearance = toolbarAppearance;
+            } else {
+                toolbar.barTintColor = toolbarAppearance.backgroundColor;
+            }
+
+            UISegmentedControl *segmented = [UISegmentedControl appearance];
+            segmented.selectedSegmentTintColor = [tint colorWithAlphaComponent:0.82];
+            [segmented setTitleTextAttributes:@{NSForegroundColorAttributeName: UIColor.secondaryLabelColor}
+                                     forState:UIControlStateNormal];
+            [segmented setTitleTextAttributes:@{NSForegroundColorAttributeName: UIColor.whiteColor}
+                                     forState:UIControlStateSelected];
         }
-
-        UISegmentedControl *segmented = [UISegmentedControl appearance];
-        segmented.selectedSegmentTintColor = accent;
-        [segmented setTitleTextAttributes:@{NSForegroundColorAttributeName: UIColor.secondaryLabelColor}
-                                 forState:UIControlStateNormal];
-        [segmented setTitleTextAttributes:@{NSForegroundColorAttributeName: UIColor.whiteColor}
-                                 forState:UIControlStateSelected];
     });
 }
 
-void AmethystApplyParallaxEffect(UIView *view, CGFloat amount) {
-    if (!view) {
-        return;
-    }
-    if (UIAccessibilityIsReduceMotionEnabled() || amount <= 0) {
-        return;
-    }
-
-    while (view.motionEffects.count > 0) {
-        [view removeMotionEffect:view.motionEffects.lastObject];
-    }
-
-    UIInterpolatingMotionEffect *xEffect = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"center.x"
-                                                                                             type:UIInterpolatingMotionEffectTypeTiltAlongHorizontalAxis];
-    xEffect.minimumRelativeValue = @(-amount);
-    xEffect.maximumRelativeValue = @(amount);
-
-    UIInterpolatingMotionEffect *yEffect = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"center.y"
-                                                                                             type:UIInterpolatingMotionEffectTypeTiltAlongVerticalAxis];
-    yEffect.minimumRelativeValue = @(-amount);
-    yEffect.maximumRelativeValue = @(amount);
-
-    UIMotionEffectGroup *group = [UIMotionEffectGroup new];
-    group.motionEffects = @[xEffect, yEffect];
-    [view addMotionEffect:group];
-}
-
-void AmethystApplyCardStyle(UIView *view) {
+void AmethystApplyVisionBackground(UIView *view) {
     if (!view) {
         return;
     }
 
-    UIColor *panel = AmethystResolveColor(AmethystColorPanel(), view.traitCollection);
-    UIColor *border = [AmethystResolveColor(AmethystColorAccentMuted(), view.traitCollection) colorWithAlphaComponent:0.62];
-    UIColor *shadowColor = AmethystResolveColor(AmethystDynamicColor(0.07, 0.20, 0.29, 0.01, 0.03, 0.05), view.traitCollection);
-    UIColor *glossTop = [UIColor colorWithWhite:1.0 alpha:0.65];
-    UIColor *glossBottom = [UIColor colorWithWhite:1.0 alpha:0.03];
+    static NSInteger const kVisionBackgroundTag = 0xA11E0;
+    static NSInteger const kVisionBlurTag = 0xA11E1;
+    static NSInteger const kVisionTintTag = 0xA11E2;
 
-    view.backgroundColor = [panel colorWithAlphaComponent:0.92];
-    view.layer.cornerRadius = 18.0;
-    if (@available(iOS 13.0, *)) {
-        view.layer.cornerCurve = kCACornerCurveContinuous;
-    }
-    view.layer.borderWidth = 1.0;
-    view.layer.borderColor = border.CGColor;
-    view.layer.masksToBounds = NO;
-    view.layer.shadowColor = shadowColor.CGColor;
-    view.layer.shadowOpacity = 0.34f;
-    view.layer.shadowOffset = CGSizeMake(0, 18);
-    view.layer.shadowRadius = 28.0f;
-
-    static NSString * const kGlossLayerName = @"amethyst.card.gloss";
-    NSMutableArray<CALayer *> *layersToRemove = [NSMutableArray array];
-    for (CALayer *layer in view.layer.sublayers) {
-        if ([layer.name isEqualToString:kGlossLayerName]) {
-            [layersToRemove addObject:layer];
-        }
-    }
-    for (CALayer *layer in layersToRemove) {
-        [layer removeFromSuperlayer];
-    }
-
-    CAGradientLayer *gloss = [CAGradientLayer layer];
-    gloss.name = kGlossLayerName;
-    gloss.frame = view.bounds;
-    gloss.cornerRadius = view.layer.cornerRadius;
-    gloss.startPoint = CGPointMake(0.0, 0.0);
-    gloss.endPoint = CGPointMake(0.9, 1.0);
-    gloss.colors = @[(id)glossTop.CGColor, (id)glossBottom.CGColor];
-    gloss.locations = @[@0.0, @0.58];
-    gloss.needsDisplayOnBoundsChange = YES;
-    [view.layer insertSublayer:gloss atIndex:0];
-
-    AmethystApplyParallaxEffect(view, 6.5);
-}
-
-void AmethystApplyPrimaryButtonStyle(UIButton *button) {
-    if (!button) {
-        return;
-    }
-    UIColor *accent = AmethystColorAccent();
-    UIColor *shadowColor = AmethystResolveColor(AmethystDynamicColor(0.04, 0.31, 0.22, 0.00, 0.15, 0.10), button.traitCollection);
-    button.backgroundColor = accent;
-    button.layer.cornerRadius = 14.0;
-    if (@available(iOS 13.0, *)) {
-        button.layer.cornerCurve = kCACornerCurveContinuous;
-    }
-    button.layer.borderWidth = 1.0;
-    button.layer.borderColor = [UIColor colorWithWhite:1.0 alpha:0.25].CGColor;
-    button.layer.shadowColor = shadowColor.CGColor;
-    button.layer.shadowOpacity = 0.52f;
-    button.layer.shadowOffset = CGSizeMake(0, 14);
-    button.layer.shadowRadius = 22.0f;
-    button.clipsToBounds = NO;
-    [button setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
-    AmethystApplyParallaxEffect(button, 8.0);
-}
-
-void AmethystApplyPanelBackground(UIView *view) {
-    if (!view) {
-        return;
-    }
-
-    static NSInteger const kBackgroundTag = 91429;
     UITableView *tableView = [view isKindOfClass:UITableView.class] ? (UITableView *)view : nil;
-    UIView *background = tableView ? tableView.backgroundView : [view viewWithTag:kBackgroundTag];
-    CAGradientLayer *baseLayer = nil;
-    CAGradientLayer *glowLayer = nil;
-    CAGradientLayer *orbLayer = nil;
-    if (!background) {
-        background = [[UIView alloc] initWithFrame:view.bounds];
-        background.tag = kBackgroundTag;
-        background.userInteractionEnabled = NO;
-        background.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        if (tableView) {
+    UIView *background = nil;
+
+    if (tableView) {
+        background = tableView.backgroundView;
+        if (!background || background.tag != kVisionBackgroundTag) {
+            background = [[UIView alloc] initWithFrame:tableView.bounds];
+            background.tag = kVisionBackgroundTag;
+            background.userInteractionEnabled = NO;
+            background.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
             tableView.backgroundView = background;
-        } else {
+        }
+        tableView.backgroundColor = UIColor.clearColor;
+        tableView.separatorColor = [AmethystVisionBorderColor() colorWithAlphaComponent:0.22];
+    } else {
+        background = [view viewWithTag:kVisionBackgroundTag];
+        if (!background) {
+            background = [[UIView alloc] initWithFrame:view.bounds];
+            background.tag = kVisionBackgroundTag;
+            background.userInteractionEnabled = NO;
+            background.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
             [view insertSubview:background atIndex:0];
         }
-
-        baseLayer = [CAGradientLayer layer];
-        [background.layer addSublayer:baseLayer];
-
-        glowLayer = [CAGradientLayer layer];
-        [background.layer addSublayer:glowLayer];
-        orbLayer = [CAGradientLayer layer];
-        [background.layer addSublayer:orbLayer];
-    } else if (background.layer.sublayers.count >= 3) {
-        baseLayer = (CAGradientLayer *)background.layer.sublayers[0];
-        glowLayer = (CAGradientLayer *)background.layer.sublayers[1];
-        orbLayer = (CAGradientLayer *)background.layer.sublayers[2];
-    } else {
-        [background.layer.sublayers makeObjectsPerformSelector:@selector(removeFromSuperlayer)];
-        baseLayer = [CAGradientLayer layer];
-        glowLayer = [CAGradientLayer layer];
-        orbLayer = [CAGradientLayer layer];
-        [background.layer addSublayer:baseLayer];
-        [background.layer addSublayer:glowLayer];
-        [background.layer addSublayer:orbLayer];
     }
 
     background.frame = view.bounds;
 
-    UIColor *topColor = AmethystResolveColor(AmethystDynamicColor(0.92, 0.96, 0.99, 0.07, 0.09, 0.12), view.traitCollection);
-    UIColor *middleColor = AmethystResolveColor(AmethystDynamicColor(0.87, 0.95, 0.93, 0.05, 0.08, 0.09), view.traitCollection);
-    UIColor *bottomColor = AmethystResolveColor(AmethystDynamicColor(0.84, 0.91, 0.95, 0.03, 0.04, 0.06), view.traitCollection);
-    UIColor *glowColor = [AmethystResolveColor(AmethystColorAccent(), view.traitCollection) colorWithAlphaComponent:0.28];
-    UIColor *orbStrong = [AmethystResolveColor(AmethystColorAccent(), view.traitCollection) colorWithAlphaComponent:0.34];
+    UIVisualEffectView *blurView = (UIVisualEffectView *)[background viewWithTag:kVisionBlurTag];
+    if (![blurView isKindOfClass:UIVisualEffectView.class]) {
+        [blurView removeFromSuperview];
+        blurView = [[UIVisualEffectView alloc] initWithEffect:nil];
+        blurView.tag = kVisionBlurTag;
+        blurView.frame = background.bounds;
+        blurView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        [background addSubview:blurView];
+    }
+    if (@available(iOS 13.0, *)) {
+        blurView.effect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemThinMaterial];
+    } else {
+        blurView.effect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
+    }
 
-    baseLayer.frame = background.bounds;
-    baseLayer.startPoint = CGPointMake(0, 0);
-    baseLayer.endPoint = CGPointMake(1, 1);
-    baseLayer.colors = @[(id)topColor.CGColor, (id)middleColor.CGColor, (id)bottomColor.CGColor];
-    baseLayer.locations = @[@0.0, @0.45, @1.0];
+    UIView *tintView = [background viewWithTag:kVisionTintTag];
+    if (!tintView) {
+        tintView = [[UIView alloc] initWithFrame:background.bounds];
+        tintView.tag = kVisionTintTag;
+        tintView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        [background addSubview:tintView];
+    }
+    tintView.backgroundColor = [AmethystVisionGlassColor() colorWithAlphaComponent:0.38];
+}
 
-    glowLayer.frame = background.bounds;
-    glowLayer.startPoint = CGPointMake(0.15, 0.0);
-    glowLayer.endPoint = CGPointMake(0.85, 1.0);
-    glowLayer.colors = @[(id)glowColor.CGColor, (id)UIColor.clearColor.CGColor];
+void AmethystApplyVisionSurface(UIView *view, CGFloat cornerRadius) {
+    if (!view) {
+        return;
+    }
 
-    orbLayer.frame = background.bounds;
-    orbLayer.startPoint = CGPointMake(0.96, 0.05);
-    orbLayer.endPoint = CGPointMake(0.3, 0.8);
-    orbLayer.colors = @[(id)orbStrong.CGColor, (id)UIColor.clearColor.CGColor];
-    orbLayer.locations = @[@0.0, @0.62];
+    view.backgroundColor = [AmethystVisionGlassColor() colorWithAlphaComponent:0.62];
+    view.layer.cornerRadius = cornerRadius > 0 ? cornerRadius : 13.0;
+    if (@available(iOS 13.0, *)) {
+        view.layer.cornerCurve = kCACornerCurveContinuous;
+    }
+    view.layer.borderWidth = 1.0;
+    view.layer.borderColor = [AmethystVisionBorderColor() colorWithAlphaComponent:0.24].CGColor;
+    view.layer.shadowColor = [UIColor colorWithWhite:0.0 alpha:1.0].CGColor;
+    view.layer.shadowOpacity = 0.08f;
+    view.layer.shadowOffset = CGSizeMake(0, 4);
+    view.layer.shadowRadius = 10.0f;
+    view.layer.masksToBounds = NO;
+}
+
+void AmethystApplyVisionCell(UITableViewCell *cell) {
+    if (!cell) {
+        return;
+    }
+
+    cell.backgroundColor = UIColor.clearColor;
+    cell.contentView.backgroundColor = UIColor.clearColor;
+
+    UIView *backgroundView = cell.backgroundView;
+    if (!backgroundView) {
+        backgroundView = [[UIView alloc] initWithFrame:cell.bounds];
+        backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        cell.backgroundView = backgroundView;
+    }
+    backgroundView.frame = cell.bounds;
+    AmethystApplyVisionSurface(backgroundView, 12.0);
+
+    UIView *selectedBackground = cell.selectedBackgroundView;
+    if (!selectedBackground) {
+        selectedBackground = [[UIView alloc] initWithFrame:cell.bounds];
+        selectedBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        cell.selectedBackgroundView = selectedBackground;
+    }
+    selectedBackground.frame = cell.bounds;
+    selectedBackground.backgroundColor = [AmethystVisionSelectedColor() colorWithAlphaComponent:0.55];
+    selectedBackground.layer.cornerRadius = backgroundView.layer.cornerRadius;
+    if (@available(iOS 13.0, *)) {
+        selectedBackground.layer.cornerCurve = kCACornerCurveContinuous;
+    }
+}
+
+void AmethystApplyVisionInput(UITextField *textField) {
+    if (!textField) {
+        return;
+    }
+
+    textField.backgroundColor = [AmethystVisionGlassColor() colorWithAlphaComponent:0.66];
+    textField.layer.cornerRadius = 12.0;
+    if (@available(iOS 13.0, *)) {
+        textField.layer.cornerCurve = kCACornerCurveContinuous;
+    }
+    textField.layer.borderWidth = 1.0;
+    textField.layer.borderColor = [AmethystVisionBorderColor() colorWithAlphaComponent:0.26].CGColor;
+    textField.layer.masksToBounds = YES;
+}
+
+void AmethystApplyVisionPrimaryButton(UIButton *button) {
+    if (!button) {
+        return;
+    }
+
+    UIColor *tint = AmethystVisionTintColor();
+    button.backgroundColor = [tint colorWithAlphaComponent:0.86];
+    [button setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
+    button.layer.cornerRadius = 12.0;
+    if (@available(iOS 13.0, *)) {
+        button.layer.cornerCurve = kCACornerCurveContinuous;
+    }
+    button.layer.borderWidth = 1.0;
+    button.layer.borderColor = [UIColor colorWithWhite:1.0 alpha:0.28].CGColor;
+    button.layer.shadowColor = [UIColor colorWithRed:0.06 green:0.20 blue:0.34 alpha:1.0].CGColor;
+    button.layer.shadowOpacity = 0.18f;
+    button.layer.shadowOffset = CGSizeMake(0, 5);
+    button.layer.shadowRadius = 10.0f;
+    button.clipsToBounds = NO;
 }
 
 void customNSLog(const char *file, int lineNumber, const char *functionName, NSString *format, ...)

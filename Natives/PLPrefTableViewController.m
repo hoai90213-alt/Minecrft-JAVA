@@ -28,17 +28,11 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.view.backgroundColor = UIColor.clearColor;
-    AmethystApplyPanelBackground(self.view);
 
     self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleInsetGrouped];
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
     self.tableView.backgroundColor = UIColor.clearColor;
-    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.tableView.contentInset = UIEdgeInsetsMake(10, 8, 16, 8);
-    self.tableView.clipsToBounds = NO;
-    self.tableView.rowHeight = UITableViewAutomaticDimension;
-    self.tableView.estimatedRowHeight = 72;
+    AmethystApplyVisionBackground(self.tableView);
     if (self.prefSections) {
         self.prefSectionsVisibility = [[NSMutableArray<NSNumber *> alloc] initWithCapacity:self.prefSections.count];
         for (int i = 0; i < self.prefSections.count; i++) {
@@ -50,11 +44,6 @@
     }
 }
 
-- (void)viewDidLayoutSubviews {
-    [super viewDidLayoutSubviews];
-    AmethystApplyPanelBackground(self.view);
-}
-
 - (UIBarButtonItem *)drawHelpButton {
     if (!self.helpBtn) {
         self.helpBtn = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"questionmark.circle"] style:UIBarButtonItemStyleDone target:self action:@selector(toggleDetailVisibility)];
@@ -64,6 +53,7 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    AmethystApplyVisionBackground(self.tableView);
 
     // Put navigation buttons back in place if we're first of the navigation controller
     if (self.hasDetail && self.navigationController) {
@@ -132,9 +122,6 @@
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     cell.textLabel.textColor = nil;
     cell.detailTextLabel.text = nil;
-    cell.backgroundColor = UIColor.clearColor;
-    cell.clipsToBounds = NO;
-    cell.tintColor = AmethystColorAccent();
 
     NSString *key = item[@"key"];
     if (indexPath.row == 0 && self.prefSections) {
@@ -157,16 +144,6 @@
     BOOL destructive = [item[@"destructive"] boolValue];
     cell.imageView.tintColor = destructive ? UIColor.systemRedColor : nil;
     cell.imageView.image = [UIImage systemImageNamed:item[@"icon"]];
-    cell.detailTextLabel.textColor = UIColor.secondaryLabelColor;
-
-    UIView *background = [[UIView alloc] init];
-    AmethystApplyCardStyle(background);
-    cell.backgroundView = background;
-    UIView *selectedBackground = [[UIView alloc] init];
-    selectedBackground.backgroundColor = [AmethystColorAccent() colorWithAlphaComponent:0.22];
-    selectedBackground.layer.cornerRadius = 18;
-    selectedBackground.layer.masksToBounds = YES;
-    cell.selectedBackgroundView = selectedBackground;
     
     if (cellStyle != UITableViewCellStyleValue1) {
         cell.detailTextLabel.text = nil;
@@ -181,6 +158,7 @@
     cell.textLabel.enabled = cell.detailTextLabel.enabled = cell.userInteractionEnabled;
     [(id)cell.accessoryView setEnabled:cell.userInteractionEnabled];
 
+    AmethystApplyVisionCell(cell);
     return cell;
 }
 
@@ -215,14 +193,10 @@
         //view.nonEditingLinebreakMode = NSLineBreakByCharWrapping;
         view.returnKeyType = UIReturnKeyDone;
         view.textAlignment = NSTextAlignmentRight;
-        view.backgroundColor = [AmethystColorPanel() colorWithAlphaComponent:0.94];
-        view.layer.cornerRadius = 10.0;
-        view.layer.borderWidth = 1.0;
-        view.layer.borderColor = [AmethystColorAccentMuted() colorWithAlphaComponent:0.62].CGColor;
-        view.layer.masksToBounds = YES;
         view.placeholder = localize((item[@"placeholder"] ? item[@"placeholder"] :
             [NSString stringWithFormat:@"preference.placeholder.%@", key]), nil);
         view.text = weakSelf.getPreference(section, key);
+        AmethystApplyVisionInput(view);
         cell.accessoryView = view;
     };
 
@@ -240,7 +214,6 @@
         view.maximumValue = [item[@"max"] intValue];
         view.continuous = YES;
         view.value = [weakSelf.getPreference(section, key) intValue];
-        view.tintColor = AmethystColorAccent();
         cell.accessoryView = view;
     };
 
@@ -252,7 +225,6 @@
         } else {
             [view setOn:[weakSelf.getPreference(section, key) isEqualToString:customSwitchValue[1]] animated:NO];
         }
-        view.onTintColor = AmethystColorAccent();
         [view addTarget:weakSelf action:@selector(switchChanged:) forControlEvents:UIControlEventValueChanged];
         cell.accessoryView = view;
     };

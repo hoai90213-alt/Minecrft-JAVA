@@ -45,16 +45,13 @@ static void *ProgressObserverContext = &ProgressObserverContext;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.view.backgroundColor = UIColor.clearColor;
-    AmethystApplyPanelBackground(self.view);
+    AmethystApplyVisionBackground(self.view);
 
     if ([self respondsToSelector:@selector(setNeedsUpdateOfScreenEdgesDeferringSystemGestures)]) {
         [self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
     }
     UIToolbar *targetToolbar = self.toolbar;
     BOOL hasLiquidGlass = PLIsUISolariumEnabled();
-    UIColor *accent = AmethystColorAccent();
-    UIColor *border = [AmethystColorAccentMuted() colorWithAlphaComponent:0.66];
     
     if(hasLiquidGlass) {
         self.versionTextField = [[PickTextField alloc] initWithFrame:CGRectMake(0, 0, MIN(self.view.frame.size.width,self.view.frame.size.height)*0.8 - 40, 36)];
@@ -72,18 +69,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
     self.versionTextField.leftViewMode = UITextFieldViewModeAlways;
     self.versionTextField.rightViewMode = UITextFieldViewModeAlways;
     self.versionTextField.textAlignment = NSTextAlignmentCenter;
-    self.versionTextField.backgroundColor = [AmethystColorPanel() colorWithAlphaComponent:0.90];
-    self.versionTextField.textColor = UIColor.labelColor;
-    self.versionTextField.tintColor = accent;
-    self.versionTextField.layer.cornerRadius = 14;
-    self.versionTextField.layer.borderWidth = 1;
-    self.versionTextField.layer.borderColor = border.CGColor;
-    self.versionTextField.layer.shadowColor = [UIColor colorWithRed:18/255.0 green:46/255.0 blue:66/255.0 alpha:1.0].CGColor;
-    self.versionTextField.layer.shadowOpacity = 0.28f;
-    self.versionTextField.layer.shadowOffset = CGSizeMake(0, 14);
-    self.versionTextField.layer.shadowRadius = 20.0f;
-    self.versionTextField.clipsToBounds = NO;
-    AmethystApplyParallaxEffect(self.versionTextField, 3.5);
+    AmethystApplyVisionInput(self.versionTextField);
 
     self.versionPickerView = [[PLPickerView alloc] init];
     self.versionPickerView.delegate = self;
@@ -102,11 +88,12 @@ static void *ProgressObserverContext = &ProgressObserverContext;
                                                                  target:self
                                                                  action:@selector(performInstallOrShowDetails:)];
         self.buttonInstallItem.enabled = NO;
-        self.buttonInstallItem.tintColor = UIColor.whiteColor;
         dispatch_async(dispatch_get_main_queue(), ^{
-            self.buttonInstallItem.buttonGlassView.backgroundColor = [accent colorWithAlphaComponent:0.68];
+            self.buttonInstallItem.buttonGlassView.backgroundColor = [UIColor colorWithRed:0.18 green:0.56 blue:0.82 alpha:0.46];
+            self.buttonInstallItem.buttonGlassView.layer.cornerRadius = 12.0;
         });
         [textFieldContainer addSubview:self.versionTextField];
+        AmethystApplyVisionSurface(textFieldContainer, 14.0);
         UIBarButtonItem *textFieldItem = [[UIBarButtonItem alloc] initWithCustomView:textFieldContainer];
         self.globalToolbarItems = @[
             textFieldItem,
@@ -117,11 +104,13 @@ static void *ProgressObserverContext = &ProgressObserverContext;
         setButtonPointerInteraction(self.buttonInstall);
         [self.buttonInstall setTitle:localize(@"Play", nil) forState:UIControlStateNormal];
         self.buttonInstall.autoresizingMask = AUTORESIZE_MASKS;
-        AmethystApplyPrimaryButtonStyle(self.buttonInstall);
+        self.buttonInstall.backgroundColor = [UIColor colorWithRed:121/255.0 green:56/255.0 blue:162/255.0 alpha:1.0];
+        self.buttonInstall.layer.cornerRadius = 5;
         self.buttonInstall.frame = CGRectMake(self.toolbar.frame.size.width * 0.8, 4, self.toolbar.frame.size.width * 0.2, self.toolbar.frame.size.height - 8);
         self.buttonInstall.tintColor = UIColor.whiteColor;
         self.buttonInstall.enabled = NO;
         [self.buttonInstall addTarget:self action:@selector(performInstallOrShowDetails:) forControlEvents:UIControlEventPrimaryActionTriggered];
+        AmethystApplyVisionPrimaryButton(self.buttonInstall);
         [targetToolbar addSubview:self.progressViewMain];
         [targetToolbar addSubview:self.versionTextField];
         [targetToolbar addSubview:self.buttonInstall];
@@ -134,7 +123,6 @@ static void *ProgressObserverContext = &ProgressObserverContext;
     self.progressText.autoresizingMask = AUTORESIZE_MASKS;
     self.progressText.font = [self.progressText.font fontWithSize:16];
     self.progressText.textAlignment = NSTextAlignmentCenter;
-    self.progressText.textColor = UIColor.secondaryLabelColor;
     self.progressText.userInteractionEnabled = NO;
     
     if(hasLiquidGlass) {
@@ -572,7 +560,6 @@ static void *ProgressObserverContext = &ProgressObserverContext;
 
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
-    AmethystApplyPanelBackground(self.view);
     [sidebarViewController updateAccountInfo];
     if (self.globalToolbarItems) {
         if (!self.viewControllers.firstObject.toolbarItems) {

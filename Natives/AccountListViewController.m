@@ -19,8 +19,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.view.backgroundColor = UIColor.clearColor;
-    AmethystApplyPanelBackground(self.view);
 
     if (self.accountList == nil) {
         self.accountList = [NSMutableArray array];
@@ -41,15 +39,9 @@
         }
     }
 
+    [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleSingleLine];
     self.tableView.backgroundColor = UIColor.clearColor;
-    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.tableView.contentInset = UIEdgeInsetsMake(10, 8, 12, 8);
-    self.tableView.clipsToBounds = NO;
-}
-
-- (void)viewDidLayoutSubviews {
-    [super viewDidLayoutSubviews];
-    AmethystApplyPanelBackground(self.view);
+    AmethystApplyVisionBackground(self.tableView);
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -64,21 +56,11 @@
     if (cell == nil) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"cell"];
     }
-    cell.backgroundColor = UIColor.clearColor;
-    cell.clipsToBounds = NO;
-    cell.tintColor = AmethystColorAccent();
-    UIView *background = [[UIView alloc] init];
-    AmethystApplyCardStyle(background);
-    cell.backgroundView = background;
-    UIView *selectedBackground = [[UIView alloc] init];
-    selectedBackground.backgroundColor = [AmethystColorAccent() colorWithAlphaComponent:0.22];
-    selectedBackground.layer.cornerRadius = 18;
-    selectedBackground.layer.masksToBounds = YES;
-    cell.selectedBackgroundView = selectedBackground;
 
     if (indexPath.row == self.accountList.count) {
         cell.imageView.image = [UIImage imageNamed:@"IconAdd"];
         cell.textLabel.text = localize(@"login.option.add", nil);
+        AmethystApplyVisionCell(cell);
         return cell;
     }
 
@@ -99,11 +81,8 @@
     cell.imageView.contentMode = UIViewContentModeCenter;
     [cell.imageView setImageWithURL:[NSURL URLWithString:[selected[@"profilePicURL"] stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"]] placeholderImage:[UIImage imageNamed:@"DefaultAccount"]];
 
+    AmethystApplyVisionCell(cell);
     return cell;
-}
-
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return 72.0;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {

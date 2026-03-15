@@ -15,12 +15,8 @@ extern NSMutableDictionary *prefDict;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.view.backgroundColor = UIColor.clearColor;
-    AmethystApplyPanelBackground(self.view);
-    CATransform3D perspective = CATransform3DIdentity;
-    perspective.m34 = -1.0 / 1400.0;
-    self.view.layer.sublayerTransform = perspective;
-    AmethystApplyParallaxEffect(self.view, 8.0);
+    self.view.backgroundColor = UIColor.systemBackgroundColor;
+    AmethystApplyVisionBackground(self.view);
     if ([getPrefObject(@"control.control_safe_area") length] == 0) {
         setPrefObject(@"control.control_safe_area", NSStringFromUIEdgeInsets(getDefaultSafeArea()));
     }
@@ -49,9 +45,6 @@ extern NSMutableDictionary *prefDict;
 {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
     [self changeDisplayModeForSize:size];
-    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
-        AmethystApplyPanelBackground(self.view);
-    } completion:nil];
 }
 
 - (void)changeDisplayModeForSize:(CGSize)size {

@@ -24,8 +24,7 @@ UIEdgeInsets insets;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.view.backgroundColor = UIColor.clearColor;
-    AmethystApplyPanelBackground(self.view);
+    AmethystApplyVisionBackground(self.view);
     
     CGSize size = CGSizeMake(self.view.frame.size.width, self.view.frame.size.height);
     insets = UIApplication.sharedApplication.windows.firstObject.safeAreaInsets;
@@ -57,11 +56,6 @@ UIEdgeInsets insets;
     self.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
     self.navigationItem.rightBarButtonItem = [sidebarViewController drawAccountButton];
     self.navigationItem.leftItemsSupplementBackButton = true;
-}
-
-- (void)viewDidLayoutSubviews {
-    [super viewDidLayoutSubviews];
-    AmethystApplyPanelBackground(self.view);
 }
 
 -(void)showWarningAlert:(NSString *)key hasPreference:(BOOL)isPreferenced exitWhenCompleted:(BOOL)shouldExit {
