@@ -4,10 +4,16 @@ on:
   pull_request:
     branches-ignore:
       - 'l10n_main'
+    paths-ignore:
+      - 'AmethystSwiftUI/**'
+      - '.github/workflows/swiftui-development.yml'
     types: [opened, reopened, synchronize]
   push:
     branches-ignore:
       - 'l10n_main'
+    paths-ignore:
+      - 'AmethystSwiftUI/**'
+      - '.github/workflows/swiftui-development.yml'
   workflow_dispatch:
 
 jobs:
