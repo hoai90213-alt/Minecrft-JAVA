@@ -9,11 +9,16 @@ It is the starting point for a full SwiftUI app line that can be developed and s
 - Full SwiftUI app shell with iPhone-first layout.
 - Dark smoky glass visual system.
 - Dashboard/Home, Profiles, Installer, Accounts, Settings screens.
+- Installer search:
+  - Modrinth public search.
+  - CurseForge search (requires API key in settings).
 - Persistent dashboard preferences:
   - `general.dashboard_background_mode`
   - `general.dashboard_background_path`
   - `general.dashboard_blur_strength`
   - `general.dashboard_glass_intensity`
+- Persistent installer key:
+  - `general.curseforge_api_key`
 - Core bridge protocol (`LauncherCore`) with mock implementation.
 - Objective-C bridge stub for later runtime integration.
 

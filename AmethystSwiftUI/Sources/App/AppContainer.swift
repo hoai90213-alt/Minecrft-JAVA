@@ -19,6 +19,9 @@ final class AppContainer: ObservableObject {
     @Published var installerSource: InstallerSource = .modrinth
     @Published var installerQuery = ""
     @Published var installerResults: [InstallerResult] = []
+    @Published var curseForgeApiKey = "" {
+        didSet { persistInstallerPreferences() }
+    }
 
     @Published var statusText = "Ready"
     @Published var isBusy = false
@@ -37,11 +40,13 @@ final class AppContainer: ObservableObject {
     }
 
     private let core: LauncherCore
+    private let installerSearchClient = InstallerSearchClient()
     private let defaults = UserDefaults.standard
 
     init(core: LauncherCore) {
         self.core = core
         loadDashboardPreferences()
+        loadInstallerPreferences()
         if selectedProfileID == nil {
             selectedProfileID = profiles.first?.id
         }
@@ -77,10 +82,22 @@ final class AppContainer: ObservableObject {
         defer { isBusy = false }
 
         do {
-            installerResults = try await core.search(source: installerSource, query: installerQuery)
+            installerResults = try await installerSearchClient.search(
+                source: installerSource,
+                query: installerQuery,
+                curseForgeApiKey: curseForgeApiKey
+            )
             statusText = installerResults.isEmpty ? "No results" : "Found \(installerResults.count) results"
         } catch {
-            statusText = error.localizedDescription
+            // Keep demo fallback while bridge is unfinished.
+            do {
+                installerResults = try await core.search(source: installerSource, query: installerQuery)
+                statusText = installerResults.isEmpty
+                    ? "No results"
+                    : "Found \(installerResults.count) results (fallback)"
+            } catch {
+                statusText = error.localizedDescription
+            }
         }
     }
 
@@ -126,5 +143,15 @@ final class AppContainer: ObservableObject {
         defaults.set(dashboardBackgroundPath, forKey: DashboardPreferenceKeys.backgroundPath)
         defaults.set(dashboardBlurStrength, forKey: DashboardPreferenceKeys.blurStrength)
         defaults.set(dashboardGlassIntensity, forKey: DashboardPreferenceKeys.glassIntensity)
+    }
+
+    private func loadInstallerPreferences() {
+        if let savedKey = defaults.string(forKey: InstallerPreferenceKeys.curseForgeApiKey) {
+            curseForgeApiKey = savedKey
+        }
+    }
+
+    private func persistInstallerPreferences() {
+        defaults.set(curseForgeApiKey, forKey: InstallerPreferenceKeys.curseForgeApiKey)
     }
 }

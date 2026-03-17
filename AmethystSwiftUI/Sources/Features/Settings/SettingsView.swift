@@ -59,6 +59,22 @@ struct SettingsView: View {
                 .glassCard(cornerRadius: 14, intensity: container.dashboardGlassIntensity)
 
                 VStack(alignment: .leading, spacing: 10) {
+                    Text("Installer API")
+                        .font(.subheadline.weight(.semibold))
+                    Text("CurseForge requires an API key. Modrinth works without key.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
+                    SecureField("CurseForge API Key", text: $container.curseForgeApiKey)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .padding(10)
+                        .glassCard(cornerRadius: 10, intensity: container.dashboardGlassIntensity)
+                }
+                .padding(12)
+                .glassCard(cornerRadius: 14, intensity: container.dashboardGlassIntensity)
+
+                VStack(alignment: .leading, spacing: 10) {
                     HStack {
                         Text("Blur Strength")
                         Spacer()
