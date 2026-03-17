@@ -4,6 +4,7 @@ This branch is an isolated line for full Swift UI migration work.
 
 Branch: `swift-separate-all`
 Base snapshot: `bad9ce8`
+SwiftUI app root: `AmethystSwiftUI/`
 
 Rules for this variant:
 - Keep Objective-C game/runtime core stable.
