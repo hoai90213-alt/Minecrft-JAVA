@@ -39,6 +39,13 @@ cd AmethystSwiftUI
 open AmethystSwiftUI.xcodeproj
 ```
 
+## GitHub CI (separate lane)
+- Workflow: `.github/workflows/swiftui-development.yml`
+- Trigger: changes under `AmethystSwiftUI/**` (or manual dispatch)
+- Output artifacts:
+  - `AmethystSwiftUI-simulator.app.zip`
+  - `AmethystSwiftUI-device-unsigned.app.zip`
+
 ## Migration strategy
 1. Keep runtime core in current native layer.
 2. Replace UI flows by connecting this app to real bridge calls.
