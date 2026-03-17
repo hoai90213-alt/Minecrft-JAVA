@@ -45,6 +45,7 @@ jobs:
       - name: Build iOS Simulator (Debug)
         run: |
           mkdir -p build/logs
+          set +e
           set -o pipefail
           xcodebuild \
             -project AmethystSwiftUI.xcodeproj \
@@ -55,9 +56,13 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             build 2>&1 | tee build/logs/xcodebuild-sim.log
           BUILD_STATUS=${PIPESTATUS[0]}
+          set -e
           if [ "$BUILD_STATUS" -ne 0 ]; then
             grep -E "error: " build/logs/xcodebuild-sim.log | head -n 80 | while IFS= read -r line; do
               echo "::error::$line"
+            done || true
+            tail -n 60 build/logs/xcodebuild-sim.log | while IFS= read -r line; do
+              echo "::notice::$line"
             done || true
           fi
           exit "$BUILD_STATUS"
