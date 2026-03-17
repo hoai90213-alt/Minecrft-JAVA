@@ -38,6 +38,10 @@ jobs:
           chmod +x Scripts/generate_project.sh
           ./Scripts/generate_project.sh
 
+      - name: Print project schemes
+        run: |
+          xcodebuild -list -project AmethystSwiftUI.xcodeproj
+
       - name: Build iOS Simulator (Debug)
         run: |
           xcodebuild \
