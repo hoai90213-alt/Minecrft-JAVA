@@ -48,14 +48,16 @@
 @implementation LauncherMenuViewController
 
 #define contentNavigationController ((LauncherNavigationController *)self.splitViewController.viewControllers[1])
-static NSInteger const kMenuIconTag = 0xC0DE10;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayModeNever;
     
     self.isInitialVc = YES;
-    UIView *popoverSourceView = self.view;
+    
+    UIImageView *titleView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"AppLogo"]];
+    [titleView setContentMode:UIViewContentModeScaleAspectFit];
+    self.navigationItem.titleView = titleView;
+    [titleView sizeToFit];
     
     self.options = @[
         [LauncherMenuCustomItem vcClass:LauncherNewsViewController.class],
@@ -95,8 +97,8 @@ static NSInteger const kMenuIconTag = 0xC0DE10;
              performSelector:@selector(initWithSharingItems:)
              withObject:@[[NSURL URLWithString:latestlogPath]]];
         }
-        activityVC.popoverPresentationController.sourceView = popoverSourceView;
-        activityVC.popoverPresentationController.sourceRect = popoverSourceView.bounds;
+        activityVC.popoverPresentationController.sourceView = titleView;
+        activityVC.popoverPresentationController.sourceRect = titleView.bounds;
         [self presentViewController:activityVC animated:YES completion:nil];
     }]];
     
@@ -113,24 +115,9 @@ static NSInteger const kMenuIconTag = 0xC0DE10;
     
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.backgroundColor = UIColor.clearColor;
-    self.tableView.backgroundView = nil;
-    self.tableView.rowHeight = 44.0;
-    self.tableView.estimatedRowHeight = 44.0;
-    self.tableView.alwaysBounceVertical = NO;
-    self.tableView.bounces = NO;
-    self.tableView.tableHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 1, 0.01)];
-    self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 1, 0.01)];
-    self.tableView.contentInset = UIEdgeInsetsZero;
-    self.tableView.scrollIndicatorInsets = UIEdgeInsetsZero;
-    self.tableView.sectionHeaderHeight = 0.0;
-    self.tableView.sectionFooterHeight = 0.0;
-    self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    if (@available(iOS 15.0, *)) {
-        self.tableView.sectionHeaderTopPadding = 0;
-        self.tableView.fillerRowHeight = 0.0;
-    }
+    AmethystApplyVisionBackground(self.tableView);
     
-    self.navigationController.toolbarHidden = YES;
+    self.navigationController.toolbarHidden = NO;
     UIActivityIndicatorViewStyle indicatorStyle = UIActivityIndicatorViewStyleMedium;
     UIActivityIndicatorView *toolbarIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:indicatorStyle];
     [toolbarIndicator startAnimating];
@@ -176,17 +163,9 @@ static NSInteger const kMenuIconTag = 0xC0DE10;
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    self.navigationController.navigationBarHidden = YES;
-    self.navigationController.toolbarHidden = YES;
-    self.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayModeNever;
+    AmethystApplyVisionBackground(self.tableView);
     AmethystApplyVisionSurface(self.accountButton, 14.0);
     [self restoreHighlightedSelection];
-}
-
-- (void)viewDidLayoutSubviews {
-    [super viewDidLayoutSubviews];
-    self.tableView.contentInset = UIEdgeInsetsZero;
-    self.tableView.scrollIndicatorInsets = UIEdgeInsetsZero;
 }
 
 - (UIBarButtonItem *)drawAccountButton {
@@ -219,72 +198,33 @@ static NSInteger const kMenuIconTag = 0xC0DE10;
     return self.options.count;
 }
 
-- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
-{
-    return CGFLOAT_MIN;
-}
-
-- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
-{
-    return CGFLOAT_MIN;
-}
-
-- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
-{
-    return [UIView new];
-}
-
-- (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section
-{
-    return [UIView new];
-}
-
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    LauncherMenuCustomItem *item = self.options[indexPath.row];
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
     if (cell == nil) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];
     }
 
-    if (@available(iOS 14.0, *)) {
-        cell.contentConfiguration = nil;
+    cell.textLabel.text = [self.options[indexPath.row] title];
+    
+    UIImage *origImage = [UIImage systemImageNamed:[self.options[indexPath.row]
+        performSelector:@selector(imageName)]];
+    if (origImage) {
+        UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:CGSizeMake(40, 40)];
+        UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext*_Nonnull myContext) {
+            CGFloat scaleFactor = 40/origImage.size.height;
+            [origImage drawInRect:CGRectMake(20 - origImage.size.width*scaleFactor/2, 0, origImage.size.width*scaleFactor, 40)];
+        }];
+        cell.imageView.image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     }
-    cell.textLabel.text = nil;
-    cell.textLabel.hidden = YES;
-    cell.detailTextLabel.text = nil;
-    cell.detailTextLabel.hidden = YES;
-    cell.imageView.image = nil;
-    cell.accessibilityLabel = item.title;
-
-    UIImage *icon = [UIImage systemImageNamed:item.imageName];
-    if (icon) {
-        UIImageSymbolConfiguration *symbolConfig = [UIImageSymbolConfiguration configurationWithPointSize:20 weight:UIImageSymbolWeightMedium];
-        icon = [[icon imageByApplyingSymbolConfiguration:symbolConfig] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    } else {
-        icon = [UIImage imageNamed:item.imageName];
-        if (icon) {
-            icon = [icon _imageWithSize:CGSizeMake(22, 22)];
-        }
+    
+    if (cell.imageView.image == nil) {
+        cell.imageView.layer.magnificationFilter = kCAFilterNearest;
+        cell.imageView.layer.minificationFilter = kCAFilterNearest;
+        cell.imageView.image = [UIImage imageNamed:[self.options[indexPath.row]
+            performSelector:@selector(imageName)]];
+        cell.imageView.image = [cell.imageView.image _imageWithSize:CGSizeMake(40, 40)];
     }
-
-    UIImageView *iconView = [cell.contentView viewWithTag:kMenuIconTag];
-    if (![iconView isKindOfClass:UIImageView.class]) {
-        [iconView removeFromSuperview];
-        iconView = [[UIImageView alloc] initWithFrame:CGRectZero];
-        iconView.tag = kMenuIconTag;
-        iconView.translatesAutoresizingMaskIntoConstraints = NO;
-        iconView.contentMode = UIViewContentModeScaleAspectFit;
-        [cell.contentView addSubview:iconView];
-        [NSLayoutConstraint activateConstraints:@[
-            [iconView.centerXAnchor constraintEqualToAnchor:cell.contentView.centerXAnchor],
-            [iconView.centerYAnchor constraintEqualToAnchor:cell.contentView.centerYAnchor],
-            [iconView.widthAnchor constraintEqualToConstant:22.0],
-            [iconView.heightAnchor constraintEqualToConstant:22.0],
-        ]];
-    }
-    iconView.image = icon;
-    iconView.tintColor = cell.tintColor;
     AmethystApplyVisionCell(cell);
     return cell;
 }
