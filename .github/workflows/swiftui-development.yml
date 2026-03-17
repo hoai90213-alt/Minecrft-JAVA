@@ -49,7 +49,7 @@ jobs:
           set -o pipefail
           xcodebuild \
             -project AmethystSwiftUI.xcodeproj \
-            -target AmethystSwiftUI \
+            -scheme AmethystSwiftUI \
             -configuration Debug \
             -sdk iphonesimulator \
             -derivedDataPath build/DerivedData \
@@ -71,7 +71,7 @@ jobs:
         run: |
           xcodebuild \
             -project AmethystSwiftUI.xcodeproj \
-            -target AmethystSwiftUI \
+            -scheme AmethystSwiftUI \
             -configuration Release \
             -sdk iphoneos \
             -derivedDataPath build/DerivedData \
